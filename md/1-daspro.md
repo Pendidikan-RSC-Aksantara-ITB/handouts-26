@@ -1,8 +1,8 @@
-# **Object Oriented Programming (C++)**
+# Dasar Pemrograman
 
-### *“Kenapa sih butuh OOP?”*
+## Pemrograman Berorientasi Objek (OOP)
 
-Setelah menamatkan mata kuliah Berpikir Komputasional yang mengharuskan kita untuk membuat proyek sederhana, pasti paham rasanya, awalnya simpel, tapi makin lama kode programnya lama-lama mekar ke mana-mana. Misalkan kita membuat aplikasi monitor drone yang menerima data dari beberapa sumber (GPS, IMU, battery), lalu menampilkannya di UI, dan kirim command balik. Kalau pendekatannya procedural, biasanya mulai muncul pola semacam:
+Setelah menamatkan mata kuliah Berpikir Komputasional dan membuat proyek sederhana, biasanya kita merasa: awalnya rapi, lama-lama kode melebar ke mana-mana. Misalnya kita membuat aplikasi monitor drone yang menerima data dari beberapa sumber (GPS, IMU, battery), menampilkannya di UI, lalu mengirim command balik. Jika pendekatannya procedural, pola seperti berikut cepat muncul:
 
 ```cpp
 // data untuk tiap drone
@@ -16,60 +16,72 @@ void drawDrone1OnMap() { ... }
 void drawDrone2OnMap() { ... }
 ```
 
-Saat menambah drone baru, atau menambah satu jenis data baru (mis. `battery`), jumlah variabel dan fungsi nambahnya *nggak wajar*. Ini yang bikin *spaghetti code*.
+Saat menambah drone baru, atau menambah satu jenis data baru (mis. `battery`), jumlah variabel dan fungsi naiknya tidak terkendali. Ini yang sering berujung ke *spaghetti code*.
 
-Nah, di sini **Object Oriented Programming (OOP)** jadi penyelamat. OOP itu cara mikir di mana program dianggap kumpulan *Object* yang punya data + perilaku. Jadi kita cukup bikin satu *blueprint* (mis. `DroneConnection` atau `TelemetrySource`), lalu instansiasi (membuat objek) sebanyak yang kita butuhkan. Ini bikin kode lebih terstruktur, gampang di-*maintain*, dan *scalable*.
+**Object Oriented Programming (OOP)** memecah program menjadi kumpulan *object* yang menyimpan data (state) dan punya perilaku (method). Dengan begitu, kita cukup mendefinisikan *blueprint* (mis. `DroneConnection`), lalu membuat objek sebanyak yang dibutuhkan. Hasilnya lebih terstruktur, mudah dirawat, dan lebih siap untuk skala besar.
 
-### 
+### Class dan Object
 
-1. ### **Class and Object**
+Secara teknis, **class** adalah *blueprint* yang mendefinisikan atribut (data) dan method (perilaku). **Object** adalah instansinya, yaitu data nyata yang hidup di memori saat program berjalan. Tiap kelas mempunyai atribut yang merepresentasikan karakteristik, keadaan, atau data, serta method yang mendefinisikan perilaku yang bisa dilakukan objek dari kelas tersebut. Secara konkret, atribut adalah variabel yang dimiliki objek, sedangkan method adalah fungsi yang terkait dengan objek tersebut.
 
-   Biar kebayang, bayangin **Class** itu kayak skematik atau *datasheet* komponen. Dia cuma gambar rancangan, belum ada bentuk fisiknya. Dia mendefinisikan benda itu punya apa aja (***attribute***) dan bisa ngapain aja (***method***).  
-   Sedangkan **Object** itu adalah **komponen fisik** yang udah kalian beli atau rakit berdasarkan schematic tadi. Kalian bisa bikin banyak Object dari satu Class yang sama.  
-   Contoh, kita mau bikin sistem kontrol motor DC. Kita buat dulu Class-nya.  
-     
-   class *MotorDC* {  
-   public:  
-      // Attribute (Data yang dimiliki)  
-      int pin\_pwm;  
-      int pin\_dir;  
-      int speed;  
-     
-      // Method (Apa yang bisa dia lakukan)  
-      void maju() {  
-          // Logic buat motor maju  
-          cout \<\< "Motor di pin " \<\< pin\_pwm \<\< " maju dengan speed " \<\< speed \<\< endl;  
-      }  
-     
-      void stop() {  
-          speed \= 0;  
-          cout \<\< "Motor berhenti" \<\< endl;  
-      }  
-   };  
-     
-   int main() {  
-      // Membuat Object (Realisasi dari Class)  
-      *MotorDC* motorKiri;  // Object 1  
-      motorKiri.pin\_pwm \= 5;  
-      motorKiri.speed \= 100;  
-     
-      *MotorDC* motorKanan; // Object 2  
-      motorKanan.pin\_pwm \= 6;  
-      motorKanan.speed \= 100;  
-     
-      // Menyuruh object bekerja  
-      motorKiri.maju();  
-      motorKanan.maju();  
-   }  
-     
-   *See*? Kita cuma nulis logic maju() sekali di dalam Class, tapi bisa dipake sama motorKiri  dan motorKanan.
+```cpp
+#include <iostream>
+using namespace std;
 
-### 
+class MotorDC {
+public:
+    // atribut, menyimpan sifat, karakteristik, keadaan, atau data
+    int pin_pwm;
+    int pin_dir;
+    int speed;
 
-2. ### **Encapsulation**
+    void maju() {
+        cout << "Motor di pin " << pin_pwm
+             << " maju dengan speed " << speed << endl;
+    }
 
-   Pernah gak sih kalian pakai *library* orang, terus kalian iseng ubah variabel yang harusnya internal, eh alat yg kalian buat itu malah error atau bahkan kebakar? Nah, **Encapsulation** itu tujuannya buat mencegah hal itu.  
-   Encapsulation itu seperti **membungkus** data sensitif biar nggak bisa diakses sembarangan dari luar. Kita pake *access modifier*: 
+    void stop() {
+        speed = 0;
+        cout << "Motor berhenti" << endl;
+    }
+};
+
+int main() {
+    MotorDC motorKiri;
+    motorKiri.pin_pwm = 5;
+    motorKiri.speed = 100;
+
+    MotorDC motorKanan;
+    motorKanan.pin_pwm = 6;
+    motorKanan.speed = 100;
+
+    motorKiri.maju();
+    motorKanan.maju();
+}
+```
+
+Di sini, `MotorDC` adalah class yang mendefinisikan atribut `pin_pwm`, `pin_dir`, dan `speed`, serta method `maju()` dan `stop()`. Di `main()`, kita membuat dua objek: `motorKiri` dan `motorKanan`. Masing-masing punya atribut sendiri, tapi method `maju()` dan `stop()` ditulis sekali di class dan bisa dipakai oleh semua objek.
+
+Class diagram (UML) adalah cara ringkas untuk menggambarkan struktur *class*: atribut, method, dan relasi.
+
+```mermaid
+classDiagram
+class MotorDC {
+  +int pin_pwm
+  +int pin_dir
+  +int speed
+  +maju()
+  +stop()
+}
+```
+
+### **Encapsulation**
+
+Encapsulation menjaga integritas data. Artinya, data di dalam objek tidak boleh diakses atau diubah sembarangan dari luar.
+Hal ini dicapai dengan membatasi akses ke atribut lewat **access modifier**: `public`, `protected`, dan `private`.
+
+class Rover
+Vehicle <|-- Rover
 
 | Modifier | Own Class | Derived Class | Main() |
 | :---- | :---- | :---- | :---- |
@@ -77,357 +89,459 @@ Nah, di sini **Object Oriented Programming (OOP)** jadi penyelamat. OOP itu cara
 | **Protected** | Yes | Yes | No |
 | **Private** | Yes | No | No |
 
-   
+Access modifier default di C++ adalah `private` untuk class dan `public` untuk struct. Dengan access modifier, kita bisa mengontrol bagaimana data diakses dan dimodifikasi. Misalnya, kita bisa membuat atribut `private` dan bagi siapapun yang mau mengakses nilainya harus lewat method public khusus, yaitu *getter* dan *setter*. *Getter* mengembalikan nilai atribut, sedangkan *setter* mengubah nilainya dengan validasi tertentu supaya perubahan yang dilakukan tidak merusak kondisi objek.
 
-   Bayangkan kasus *Electronic Speed Controller*. Nilai PWM itu biasanya cuma boleh 1000-2000 (cmiiw). Kalau ada *programmer* iseng nge-set nilainya jadi 99999, ESC bisa meledak. Makanya, variabel nilai PWM kita bikin **private**, dan kita kasih “pintu” lewat fungsi **public** yang ada pengecekannya. Contohnya fungsi **getter** dan **setter**.
+Class diagram juga bisa menunjukkan level akses, misalnya `-` untuk *private* dan `+` untuk *public*:
 
-   
+```mermaid
+classDiagram
+class ESC {
+  -int pwm_value
+  +setPwm(int)
+  +getPwm() int
+}
+```
 
-   class *ESC* {
+Contoh sederhananya adalah *Electronic Speed Controller* (ESC) biasanya hanya menerima PWM 1000–2000. Jika nilai dibiarkan bebas, hardware bisa rusak. Karena itu, data dibuat `private` dan perubahan dipaksa lewat *setter* yang memvalidasi.
 
-   private:
+```cpp
+#include <iostream>
+using namespace std;
 
-      int pwm\_value; // Private, gak bisa diakses langsung dari main()
+class ESC {
+private:
+    int pwm_value = 1000;
 
-   
+public:
+    void setPwm(int nilai) {
+        if (nilai > 2000) {
+            cout << "Nilai terlalu tinggi, di-cap 2000" << endl;
+            pwm_value = 2000;
+        } else if (nilai < 1000) {
+            pwm_value = 1000;
+        } else {
+            pwm_value = nilai;
+        }
+    }
 
-   public:
+    int getPwm() const {
+        return pwm_value;
+    }
+};
+```
 
-      // Setter: Pintu masuk untuk ubah data
+Intinya, akses langsung dilarang dan perubahan harus lewat gerbang yang menjaga aturan, yakni *getter/setter*.
 
-      void setPwm(int *nilai*) {
+### **Abstraction**
 
-          if (*nilai* \> 2000) {
+Abstraction menyembunyikan detail implementasi dan hanya mengekspos kontrak yang diperlukan. Dengan begitu, pemakai cukup tahu “apa yang bisa dilakukan”, bukan “bagaimana caranya”.
 
-              cout \<\< "Bahaya\! Nilai ketinggian. Di-cap di 2000\." \<\< endl;
+Di C++, abstraksi bisa dibuat lewat **abstract class** (boleh punya state dan method default) dan **interface** (murni kontrak). Contoh berikut memakai satu abstract class dan beberapa interface agar terlihat peran masing-masing.
 
-              pwm\_value \= 2000;
+```mermaid
+classDiagram
+class Vehicle {
+  <<abstract>>
+  +string id
+  +arm()
+  +disarm()
+    +status()
+}
+class Drone
+Vehicle <|-- Drone
 
-          } else if (*nilai* \< 1000) {
+class INavigable {
+  <<interface>>
+  +gotoLatLon(double,double)
+}
+class IFlyable {
+  <<interface>>
+    +takeOff()
+    +land()
+}
 
-              pwm\_value \= 1000;
+Drone ..|> INavigable
+Drone ..|> IFlyable
+class Rover
+Vehicle <|-- Rover
+Rover ..|> INavigable
+```
 
-          } else {
+`Vehicle` menjadi kerangka untuk semua kendaraan (punya `id` dan aksi umum `arm()/disarm()`), sedangkan kemampuan spesifik dinyatakan lewat interface. `Drone` mengimplementasikan `INavigable` dan `IFlyable`, sementara `Rover` hanya `INavigable` karena tidak bisa terbang.
 
-              pwm\_value \= *nilai*;
+`Vehicle` adalah [*abstract class*](https://www.geeksforgeeks.org/cpp/pure-virtual-functions-and-abstract-classes/) karena punya setidaknya satu *pure virtual function* (`status()`), yakni fungsi yang tidak punya implementasi di kelas dasar dan harus di-*override* di turunan. Kelas abstrak tidak bisa diinstansiasi langsung, tetapi menyediakan atribut dan perilaku umum yang bisa dipakai oleh turunannya.
 
-          }
+`INavigable` dan `IFlyable` adalah adalah [interface](https://www.geeksforgeeks.org/interfaces-in-cpp/). Interface adalah kontrak yang mendefinisikan sekumpulan method tanpa implementasi. Dalam bahasa yang lebih sederhana, interface itu semacam cetak biru yang hanya menyatakan method apa saja yang harus ada, tanpa menjelaskan bagaimana cara kerjanya. Secara intuitif, interface itu seperti kemampuan atau perilaku tertentu yang bisa dimiliki oleh sebuah kelas.
 
-      }
+Di kasus ini, `INavigable` menyatakan kemampuan bernavigasi lewat `gotoLatLon()`, sedangkan `IFlyable` menyatakan kemampuan lepas landas dan mendarat lewat `takeOff()` dan `land()`.
 
-   
+Misalkan kita mau melakukan sesuatu dengan objek apapun yang bisa dinavigasi, kita cukup tahu bahwa objek itu mengimplementasikan `INavigable`, tanpa peduli apakah itu `Drone`, `Rover`, atau lainnya dan bagaimana cara kerjanya di balik layar. Akibatnya, kita bisa langsung gunakan method `gotoLatLon()` tanpa perlu peduli dia sebenarnya objek dari kelas apa, yang penting dia punya kemampuan navigasi (mengimplementasikan interface `INavigable`).
 
-      // Getter: Pintu buat mengintip data
+```cpp
+#include <iostream>
+#include <string>
+#include <utility>
+using namespace std;
 
-      int getPwm() {
+class Vehicle {
+protected:
+    string id;
 
-          return pwm\_value;
+public:
+    explicit Vehicle(string id_) : id(std::move(id_)) {}
+    virtual void arm() {
+        cout << "Vehicle " << id << " armed" << endl;
+    }
+    virtual void disarm() {
+        cout << "Vehicle " << id << " disarmed" << endl;
+    }
+    virtual void status() = 0; // pure virtual function
+    virtual ~Vehicle() = default;
+};
 
-      }
+class INavigable {
+public:
+    virtual void gotoLatLon(double lat, double lon) = 0;
+    virtual ~INavigable() = default;
+};
 
-   };
+class IFlyable {
+public:
+    virtual void takeOff() = 0;
+    virtual void land() = 0;
+    virtual ~IFlyable() = default;
+};
 
-   
+class Drone : public Vehicle, public INavigable, public IFlyable {
+public:
+    explicit Drone(string id_) : Vehicle(std::move(id_)) {}
 
-   Jadi di main(), kita nggak bisa tulis esc1.pwm\_value \= 99999; (bakal error). Kita dipaksa lewat esc1.setPwm(99999); yang aman karena ada filternya.
+    void takeOff() override {
+        cout << "Drone " << id << " take off" << endl;
+    }
 
-### 
+    void gotoLatLon(double lat, double lon) override {
+        cout << "Drone ke " << lat << ", " << lon << endl;
+    }
+    void land() override {
+        cout << "Drone " << id << " land" << endl;
+    }
 
-3. ### **Abstraction**
+    void status() override {
+        cout << "Drone " << id << " status: AIRBORNE" << endl;
+    }
+};
 
-   **Abstraction** itu intinya kita nggak peduli cara kerjanya gimana, yang penting ada hasilnya, sehingga menyembunyikan kerumitan di belakang layar.  
-   Contohnya adalah, misal kalian adalah pilot *drone*. Kalian cuma perlu tau kalau *stick* dimajuin, drone bakal maju. Kalian nggak perlu tau (dan nggak mau tau) itung-itungan PID Controller, algoritma *sensor fusion*, atau *inverse kinematics* yang terjadi di dalam Flight Controller biar drone itu stabil.  
-   Di kodingan, kita biasanya pakai *Header file* atau *Interface* buat *abstraction*. Programmer lain yang make *code* kalian cuma perlu tau fungsi flyTo(koordinat), tanpa perlu pusing liat rumus matematika di dalemnya.  
-     
-   class *Drone* {  
-   public:  
-      void takeOff() {  
-          // Berbagai proses:  
-          // 1\. Cek Battery  
-          // 2\. Calibrate Gyro  
-          // 3\. Spin motors pelan-pelan  
-          // 4\. PID calculation loop  
-          cout \<\< "Drone take off..." \<\< endl;  
-      }  
-   };  
-     
-   int main() {  
-      *Drone* dji;  
-      dji.takeOff(); // simpler hehe  
-   }  
- 
+class Rover : public Vehicle, public INavigable {
+public:
+    explicit Rover(string id_) : Vehicle(std::move(id_)) {}
 
+    void gotoLatLon(double lat, double lon) override {
+        cout << "Rover ke " << lat << ", " << lon << endl;
+    }
 
-4. **Inheritance**  
-   **Inheritance** atau pewarisan itu punya prinsip “*Don't Repeat Yourself*” (DRY). Bayangkan, kalian mau bikin *code* buat macam-macam sensor robot, seperti Sensor Ultrasonic, Sensor Lidar, dan Sensor Gyro.  
-   ![][image1]  
-   Semua sensor itu pasti punya kesamaan, yaitu punya ID, punya status aktif/nggak, dan butuh power. Dibandingkan menulis ulang variabel id dan isActive di tiap class sensor, mending kita bikin satu ***Parent Class*** (Base Class) namanya Sensor, terus sensor-sensor spesifik jadi ***Child Class*** (Derived Class) yang mewarisi sifat orang tuanya.  
-     
-   // Base Class  
-   class *Sensor* {  
-   public:  
-      int id;  
-      bool isActive;  
-     
-      void powerOn() {  
-          isActive \= true;  
-          cout \<\< "Sensor nyala." \<\< endl;  
-      }  
-   };  
-     
-   // Derived Class  
-   // Lidar mewarisi semua sifat Sensor  
-   class *Lidar* : public *Sensor* {  
-   public:  
-      int range\_max; // Ini sifat khusus Lidar, parents tidak punya  
-     
-      void scanArea() {  
-          cout \<\< "Lidar scanning..." \<\< endl;  
-      }  
-   };  
-     
-   int main() {  
-      *Lidar* myLidar;  
-      myLidar.powerOn(); // Fungsi ini punya parents, tapi Lidar bisa pake  
-      myLidar.scanArea(); // Fungsi ini punya Lidar sendiri.  
-   }  
-     
-   Lumayan hemat baris kode kan? Kalau mau nambah sensor baru kayak Camera, tinggal  class Camera : public Sensor.
+    void status() override {
+        cout << "Rover " << id << " status: AMANH" << endl;
+    }
 
-### 
+};
 
-5. ### **Polymorphism**
+int main() {
+    Drone dji("DJI-01");
+    dji.arm();
+    dji.takeOff();
+    dji.gotoLatLon(-6.89, 107.61);
 
-   Ini konsep yang namanya paling keren tapi sering bikin bingung. **Polymorphism** artinya “banyak bentuk”. Intinya, satu perintah yang sama bisa direspon beda-beda tergantung siapa object-nya.  
-   Balik lagi ke sensor. Semua sensor pasti punya fungsi buat baca data, sebut aja readData(). Tapi cara kerjanya beda kan? Contohnya Ultrasonic baca jarak pake suara, Camera baca gambar, Gyro baca sudut.  
-   Dengan *Polymorphism*, kita bisa kumpulin semua sensor itu dalam satu wadah (misalnya satu array), lalu kita suruh semuanya readData(). Kita nggak perlu tau dia sensor apa, pokoknya baca data. Ini butuh fitur C++ namanya **Virtual Function**.  
-     
-   class *Sensor* {  
-   public:  
-      // Virtual function (Cuma definisi kosong/default, nanti ditimpa sama anaknya)  
-      virtual void readData() {  
-          cout \<\< "Baca data generic..." \<\< endl;  
-      }  
-   };  
-     
-   class *Ultrasonic* : public *Sensor* {  
-   public:  
-      // Override (implementasi sesungguhnya untuk Ultrasonic)  
-      void readData() override {  
-          cout \<\< "Ultrasonic: Jarak 50 cm" \<\< endl;  
-      }  
-   };  
-     
-   class *Gyro* : public *Sensor* {  
-   public:  
-      // Override (implementasi sesungguhnya untuk Gyro)  
-      void readData() override {  
-          cout \<\< "Gyro: Sudut 90 derajat" \<\< endl;  
-      }  
-   };  
-     
-   int main() {  
-      // buat pointer ke base class  
-      *Sensor*\* s1 \= **new** *Ultrasonic*();  
-      *Sensor*\* s2 \= **new** *Gyro*();  
-     
-      s1\-\>readData(); // Output: Ultrasonic: Jarak 50 cm  
-      s2\-\>readData(); // Output: Gyro: Sudut 90 derajat  
-   }  
-     
-   Bayangin kalau robot kalian punya 50 sensor beda jenis. Kalian bisa masukin semuanya ke dalam satu *loop*, terus panggil sensor\[i\]-\>readData(). Robot bakal otomatis tau cara baca masing-masing sensor. Jadi ga ribet lagi xixi.  
-   
+    Rover rover("UGV-01");
+    rover.arm();
+    rover.gotoLatLon(-6.90, 107.62);
+}
+```
 
-6. ### **Template Classes**
+### **Inheritance**
 
-   Untuk template class, bayangkan kalian mengembangkan kode flight controller / ground station drone. Banyak struktur data di drone itu **formatnya sama**, tapi **tipe datanya bisa beda tergantung kebutuhan**.  
-     
-   Contohnya:  
-   Drone sering mengirim “packet telemetry” yang isinya mirip:  
-* timestamp  
-* source (contoh: "GPS", "IMU", "BAT")  
-* value (nilai sensornya)  
-* unit  
-    
-  Nah, variabel *value* bisa memiliki tipe yang berbeda:  
-* GPS altitude: *float*  
-* Battery percentage: *int*  
-* Status flight mode: *string* atau *enum*  
-* Error code: *uint16\_t*  
-    
-  Kalau kalian tidak memakai template, kalian akan tergoda bikin banyak class yang isinya sama:  
-* TelemetryFloat  
-* TelemetryInt  
-* TelemetryString  
-    
-  Padahal 95% isi class-nya identik, yang beda hanya tipe data *value*. Di sinilah Template Class dipakai.  
-    
-  **Template Class** adalah mekanisme di C++ untuk membuat *blueprint* class yang **generik terhadap tipe data tertentu**. Artinya, kita menulis class **sekali**, lalu saat membuat objek kita bisa menentukan tipe data yang dipakai.  
-    
-  Lalu bagaimana kita bisa membuat template class? Template class dibuat dengan menggunakan sintaks \<template T\>, T disini adalah suatu tipe yang bisa menjadi int, string, double, atau tipe lainnya.  
-    
-  Saat kalian menulis:  
-* Telemetry\<float\> berarti compiler membuat versi class dengan T \= float  
-* Telemetry\<int\> berarti compiler membuat versi class dengan T \= int  
-  Jadi satu kode template bisa menghasilkan beberapa “versi class” secara otomatis saat compile-time.  
-    
-  Contoh template class:  
-  template \<typename T\>  
-  class TelemetryPacket {  
-  public:  
-     unsigned long timestamp\_ms;  
-     string source;  
-     T value;         // tipe value fleksibel  
-     string unit;  
-    
-     TelemetryPacket(unsigned long ts, string src, T val, string u):  
-         timestamp\_ms(ts), source(src), value(val), unit(u) {}  
-    
-     void print() {  
-         cout \<\< "\[" \<\< timestamp\_ms \<\< "ms\] "  
-              \<\< source \<\< " \= " \<\< value \<\< " " \<\< unit \<\< endl;  
-     }  
-  };  
-    
-  int main() {  
-     TelemetryPacket\<float\> alt(1200, "GPS\_ALT", 420.69f, "m");  
-     TelemetryPacket\<int\> batt(1200, "BATTERY", 67, "%");  
-     TelemetryPacket\<string\> mode(1200, "FLIGHT\_MODE", "ANGLE", "");  
-    
-     alt.print();  
-     batt.print();  
-     mode.print();  
-  }  
-    
-  Hal diatas lebih optimal dibandingkan bila tidak memakai template class:  
-  // value \= float (mis. altitude)  
-  class TelemetryPacketFloat {  
-  public:  
-     unsigned long timestamp\_ms;  
-     string source;  
-     float value;  
-     string unit;  
-    
-     TelemetryPacketFloat(unsigned long ts, string src, float val, string u)  
-         : timestamp\_ms(ts), source(src), value(val), unit(u) {}  
-    
-     void print() const {  
-         cout \<\< "\[" \<\< timestamp\_ms \<\< "ms\] " \<\< source \<\< " \= " \<\< value \<\< " " \<\< unit \<\< endl;  
-     }  
-  };  
-    
-  // value \= int (mis. battery %)  
-  class TelemetryPacketInt {  
-  public:  
-     unsigned long timestamp\_ms;  
-     string source;  
-     int value;  
-     string unit;  
-    
-     TelemetryPacketInt(unsigned long ts, string src, int val, string u)  
-         : timestamp\_ms(ts), source(src), value(val), unit(u) {}  
-    
-     void print() {  
-         cout \<\< "\[" \<\< timestamp\_ms \<\< "ms\] " \<\< source \<\< " \= " \<\< value \<\< " " \<\< unit \<\< endl;  
-     }  
-  };  
-    
-  // value \= string (mis. flight mode)  
-  class TelemetryPacketString {  
-  public:  
-     unsigned long timestamp\_ms;  
-     string source;  
-     string value;  
-     string unit;  
-    
-     TelemetryPacketString(unsigned long ts, string src, string val, string u)  
-         : timestamp\_ms(ts), source(src), value(val), unit(u) {}  
-    
-     void print() {  
-         cout \<\< "\[" \<\< timestamp\_ms \<\< "ms\] " \<\< source \<\< " \= " \<\< value \<\< " " \<\< unit \<\< endl;  
-     }  
-  };  
-    
-  int main() {  
-     TelemetryPacketFloat alt(1200, "GPS\_ALT", 123.45f, "m");  
-     TelemetryPacketInt batt(1200, "BATTERY", 87, "%");  
-     TelemetryPacketString mode(1200, "FLIGHT\_MODE", "ANGLE", "");  
-    
-     alt.print();  
-     batt.print();  
-     mode.print();  
-    
-     return 0;  
-  }  
-    
-  Kalau tidak memakai **Template Class**, selain kode yang diperlukan lebih panjang, akan timbul masalah lain,  
-  Kalau nanti kalian mau:  
-* menambah field baru: int seq; (nomor urut packet),  
-* atau menambah method baru: bool isFrom(const string& s) const;,  
-* atau mengubah format print(),  
-    
-  maka Anda harus mengubahnya di TelemetryPacketFloat, TelemetryPacketInt, TelemetryPacketString satu per satu. Ini rawan:  
-* lupa update salah satu class,  
-* bug tidak konsisten,  
-* maintenance lama.  
-    
-  Itulah alasan template class berguna, kalian mempunyai satu definisi class,yang tipe valuenya bisa diganti saat instansiasi, dan ketika ingin mengupdate sesuatu yang berhubungan dengan class tersebut, kalian hanya perlu mengupdate satu class saja.
+Inheritance dipakai saat beberapa class memiliki **struktur data dan perilaku dasar yang sama**. Kita menaruh bagian umum di *base class*, lalu turunan menambah perilaku khusus.
 
-7. ### **Pointer (\*) vs Reference (&)**
+```mermaid
+classDiagram
+class Sensor {
+    +int id
+    +bool isActive
+    +powerOn()
+}
+class Lidar {
+    +int range_max
+    +scanArea()
+}
+class Ultrasonic {
+    +int cone_deg
+    +readDistance()
+}
+class Gyro {
+    +calibrate()
+}
+class Camera {
+    +takeSnapshot()
+}
+Sensor <|-- Lidar
+Sensor <|-- Ultrasonic
+Sensor <|-- Gyro
+Sensor <|-- Camera
+```
 
-   Misalnya kita punya sebuah pernyataan:
+Di sini artinya semua sensor berbagi atribut dasar (`id`, `isActive`) dan method umum (`powerOn()`), lalu masing-masing turunan menambahkan kemampuan spesifik (mis. `scanArea()` pada `Lidar`).
 
-| int pwm \= 1500 |
-| :---- |
+```cpp
+#include <iostream>
+using namespace std;
 
-   
+class Sensor {
+public:
+        int id;
+        bool isActive = false;
 
-   Pernyataan tersebut artinya sebuah variabel memiliki sebuah tipe dan menyimpan suatu nilai/value. Eits\! Tapi tunggu\! Selain ketiga hal diatas, variabel juga menyimpan suatu “alamat” (misal 0x67C) dimana dia menyimpan value tersebut. 
+        void powerOn() {
+                isActive = true;
+                cout << "Sensor nyala." << endl;
+        }
+};
 
-   
+class Lidar : public Sensor {
+public:
+        int range_max;
+        void scanArea() { cout << "Lidar scanning..." << endl; }
+};
 
-   Nah, berbeda dengan variabel, suatu **Pointer (\*)** berisi sebuah alamat dari suatu data. Bayangkan pointer adalah suatu **kotak yang bisa dibuka dan memiliki suatu isi**.
+class Ultrasonic : public Sensor {
+public:
+        int cone_deg;
+        void readDistance() { cout << "Ultrasonic read distance" << endl; }
+};
 
-   
+class Gyro : public Sensor {
+public:
+        void calibrate() { cout << "Gyro calibrate" << endl; }
+};
 
-| ESC esc1; ESC\* p \= \&esc1; |
-| :---- |
+class Camera : public Sensor {
+public:
+        void takeSnapshot() { cout << "Camera snapshot" << endl; }
+};
+```
 
-   Dari contoh diatas, **esc1** adalah objek yang “tinggal” di suatu alamat memori (mis. 0x67C), **p** menyimpan angka “0x100” (alamat esc1). Saat p-\>setPwm(1500), program pergi ke alamat 0x67C dan memanggil fungsi objek di sana.
+### **Polymorphism**
 
-   
+Polymorphism secara harfiah berarti "banyak bentuk". Konsep ini memungkinkan kita memanggil method yang sama pada objek berbeda dan tetap mendapatkan perilaku yang sesuai tipe objeknya. Secara teknis, ini berjalan lewat *virtual function* dan *dynamic dispatch*: pemanggilan diputuskan saat runtime berdasarkan tipe objek aktual.
 
-   Pointer dipakai ketika:
+Mungkin sekilas nampak seperti abstraction karena bermain-main dengan interface, tapi kalau Absraction lebih ke menyembunyikan detail, Polymorphism lebih ke fleksibilitas pemanggilan method. Kalau Abstraction menekankan “kontrak apa yang harus ada”, Polymorphism menekankan “bagaimana kontrak itu dipakai seragam untuk banyak objek berbeda” (misalnya diproses dalam satu loop/collection).
 
-1. Objek boleh tidak ada → butuh nullptr sebagai “tidak menunjuk apa-apa”  
-2. Target bisa berubah (pointer dapat diarahkan ke objek lain)  
-3. Struktur data dinamis (linked list, tree, buffer), atau interoperabilitas dengan C API  
-     
-   Tetapi perlu diperhatikan, bila pointer dibuka dan tidak menunjuk kemanapun (null), hal tersebut dapat menimbukan **crash**. Maka dari itu, perlu sebuah **checker** sebelum suatu pointer dioperasikan.
+Sekilas juga mirip inheritance, tapi fokusnya berbeda. Inheritance adalah tentang berbagi struktur dan perilaku dasar, sedangkan Polymorphism adalah tentang bagaimana method yang sama bisa berperilaku berbeda tergantung objeknya.
 
-| if (esc \== nullptr) return; |
-| :---- |
+```mermaid
+classDiagram
+class Sensor {
+  +readData()
+}
+class Ultrasonic {
+  +readData()
+}
+class Gyro {
+  +readData()
+}
+Sensor <|-- Ultrasonic
+Sensor <|-- Gyro
+```
 
-   Lalu, apa itu sebuah **Reference**? **Reference** adalah **nama lain** atau bisa disebut juga alias untuk variabel/objek yang sudah ada. Bukan objek baru seperti pointer.
+ `Sensor` menyediakan kontrak `readData()`, sementara tiap turunan mengisi implementasi yang spesifik. Saat dipanggil melalui pointer ke `Sensor`, C++ tetap memilih implementasi milik objek sebenarnya.
 
-| ESC esc1; ESC& r \= esc1; |
-| :---- |
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
 
-   Pada contoh diatas, r bukanlah “kotak/objek baru”, r adalah “label kedua” untuk esc1. Saat kita memanggil r.setPwm(1000), itu sama saja seperti esc1.setPwm(1000).
+class Sensor {
+public:
+    virtual void readData() {
+        cout << "Baca data generic..." << endl;
+    }
+    virtual ~Sensor() = default;
+};
 
-   
+class Ultrasonic : public Sensor {
+public:
+    void readData() override {
+        cout << "Ultrasonic: Jarak 50 cm" << endl;
+    }
+};
 
-   Reference sering dipakai dalam:
+class Gyro : public Sensor {
+public:
+    void readData() override {
+        cout << "Gyro: Sudut 90 derajat" << endl;
+    }
+};
 
-1. Parameter fungsi yang wajib valid (tidak boleh null)  
-2. Menghindari copy objek besar (efisien)  
-3. Menyatakan “fungsi ini akan memodifikasi objek asli” dengan jelas  
-     
-   Perbedaan utama dalam **Pointer** dan **Reference** yang palin utama adalah sebuah Pointer dapat berubah tujuan alamatnya, sedangkan Reference tidak. Lalu, ketika mengoperasikan keduanya, sebuah pointer harus “dibuka” (dengan \-\> pada p-\>setpwm(67)) sedangkan sebuah Reference bisa dioperasikan seperti objek aslinya (dengan ‘.’ pada r.setpwm(67))  
-   
+int main() {
+    Ultrasonic u;
+    Gyro g;
+    vector<Sensor*> sensors = {&u, &g};
 
+    for (Sensor* s : sensors) {
+        s->readData();
+    }
+}
+```
+
+Di sini, `Sensor` mendefinisikan method virtual `readData()`. `Ultrasonic` dan `Gyro` meng-*override* method ini dengan implementasi spesifik. Di `main()`, kita menyimpan pointer ke berbagai sensor dalam satu vektor dan memanggil `readData()` secara seragam. Berkat *polymorphism*, C++ memilih implementasi yang sesuai untuk tiap objek. Jadi, "banyak bentuk" di sini berarti satu interface (`readData()`) bisa punya banyak implementasi tergantung tipe objeknya.
+
+## Fitur Lanjutan C++
+
+### **Template Class**
+
+Template memungkinkan class menerima **parameter tipe** di waktu kompilasi. Compiler akan membuat versi class baru untuk setiap tipe yang dipakai. Ini menghindari duplikasi kode tanpa kehilangan performa.
+
+```cpp
+#include <iostream>
+#include <string>
+using namespace std;
+
+template <typename T>
+class TelemetryPacket {
+public:
+    unsigned long timestamp_ms;
+    string source;
+    T value;
+    string unit;
+
+    TelemetryPacket(unsigned long ts, string src, T val, string u)
+        : timestamp_ms(ts), source(src), value(val), unit(u) {}
+
+    void print() const {
+        cout << "[" << timestamp_ms << "ms] "
+             << source << " = " << value << " " << unit << endl;
+    }
+};
+
+int main() {
+    TelemetryPacket<float> alt(1200, "GPS_ALT", 420.69f, "m");
+    TelemetryPacket<int> batt(1200, "BATTERY", 67, "%");
+    TelemetryPacket<string> mode(1200, "FLIGHT_MODE", "ANGLE", "");
+
+    alt.print();
+    batt.print();
+    mode.print();
+}
+```
+
+Keuntungan utamanya: **satu definisi, banyak tipe**, dan perubahan fitur cukup dilakukan di satu tempat.
+
+### **STL Containers**
+
+STL menyediakan *container* siap pakai. Pemilihannya bergantung pada **pola akses data**: akses indeks, insert di tengah, key-value, atau antrian. Untuk detail lengkap, lihat [cppreference container](https://en.cppreference.com/w/cpp/container.html).
+
+**[array](https://en.cppreference.com/w/cpp/container/array.html)**
+Cocok saat jumlah elemen sudah pasti sejak awal. Akses indeks sangat cepat, tapi ukurannya tidak bisa berubah.
+
+![Ilustrasi array](../assets/stl-array.svg)
+
+**[vector](https://en.cppreference.com/w/cpp/container/vector.html)**
+Pilihan default untuk daftar data. Ukurannya bisa bertambah, akses indeks cepat, dan umumnya punya ruang cadangan (*capacity*) agar penambahan elemen lebih efisien.
+
+![Ilustrasi vector](../assets/stl-vector.svg)
+
+**[list](https://en.cppreference.com/w/cpp/container/list.html)**
+Berbasis linked list. Kuat untuk insert/hapus di tengah, tetapi akses indeks lambat karena harus menelusuri node satu per satu.
+
+![Ilustrasi list](../assets/stl-list.svg)
+
+**[set](https://en.cppreference.com/w/cpp/container/set.html)**
+Menyimpan elemen unik yang otomatis terurut. Cocok untuk cek keberadaan data tanpa duplikasi.
+
+![Ilustrasi set](../assets/stl-set.svg)
+
+**[map](https://en.cppreference.com/w/cpp/container/map.html)**
+Menyimpan pasangan *key-value* yang terurut. Akses data dilakukan melalui *key* sehingga cocok untuk lookup cepat berdasarkan identitas.
+
+![Ilustrasi map](../assets/stl-map.svg)
+
+**[stack](https://en.cppreference.com/w/cpp/container/stack.html)**
+*Adapter* dengan aturan **LIFO** (*Last In, First Out*). Operasi utamanya **push** (masuk) dan **pop** (keluar dari atas).
+
+![Ilustrasi stack](../assets/stl-stack.svg)
+
+**[queue](https://en.cppreference.com/w/cpp/container/queue.html)**
+*Adapter* dengan aturan **FIFO** (*First In, First Out*). Operasi utamanya **enqueue** (masuk dari belakang) dan **dequeue** (keluar dari depan).
+
+![Ilustrasi queue](../assets/stl-queue.svg)
+
+Contoh singkat pemakaian beberapa container:
+
+```cpp
+#include <array>
+#include <vector>
+#include <list>
+#include <set>
+#include <map>
+#include <stack>
+#include <queue>
+
+std::array<int, 3> a = {1, 2, 3};
+std::vector<int> v = {1, 2}; v.push_back(3);
+std::list<int> l = {1, 2, 3};
+std::set<int> s = {1, 2, 2, 3}; // duplikat otomatis dihapus
+std::map<std::string, int> m; m["alt"] = 120;
+std::stack<int> st; st.push(10); st.pop();
+std::queue<int> q; q.push(10); q.pop();
+```
+
+### **Pointer (\*) vs Reference (&)**
+
+Sebelum bicara pointer, kita perlu paham konsep alamat memori. Kita tahu bahwa komputer punya RAM untuk menyimpan data saat program berjalan. Nah, RAM ini seperti lemari arsip dengan banyak laci, dan setiap laci punya nomor unik sebagai alamat.
+
+Ketika program berjalan, setiap variabel/objek disimpan di RAM pada lokasi tertentu di dalam memori, yakni laci dengan nomor unik tersebut. Alamat ini memungkinkan program untuk mengakses data yang disimpan di lokasi tersebut.
+
+**Pointer** adalah variabel yang menyimpan alamat tersebut. Karena yang disimpan adalah alamat, pointer bisa bernilai `nullptr` (*null pointer*, artinya tidak menunjuk ke mana pun) dan diarahkan ulang ke alamat lain. Jika pointer adalah alamat laci, maka untuk mengakses isinya kita perlu membuka laci tersebut. Ini dilakukan dengan operator dereference `*`. Cara akses atribut atau method lewat pointer memakai operator `->`.
+
+**Reference** adalah **nama lain** untuk objek yang sudah ada. Ibaratnya, reference adalah label tambahan yang ditempel di laci arsip. Reference harus diinisialisasi saat deklarasi dan tidak bisa `nullptr`. Setelah diikat ke suatu objek, reference tidak bisa dipindahkan ke objek lain.
+
+Simpelnya, pointer itu seperti alamat rumah, sedangkan reference itu nama lain untuk rumah yang sama. Alamat bisa diganti, nama lain tidak bisa dipindah ke rumah lain.
+
+![Ilustrasi pointer dan reference](../assets/pointer-reference.svg)
+
+Contoh sederhana berikut menunjukkan cara *dereference* dan perbedaan perilaku pointer vs reference.
+
+```cpp
+ESC esc1;
+ESC esc2;
+
+ESC* p = &esc1;   // pointer menyimpan alamat esc1
+ESC& r = esc1;    // reference adalah alias untuk esc1
+
+// dereference pointer (akses objek yang ditunjuk)
+(*p).setPwm(1500);
+// akses lewat arrow (lebih praktis)
+p->setPwm(1600);
+// dua cara di atas sama kayak esc1.setPwm(1600);
+
+// reference diakses seperti objek biasa
+r.setPwm(1700); // sama kayak esc1.setPwm(1700);
+
+// pointer bisa diarahkan ulang ke objek lain
+p = &esc2; // tadinya p menunjuk ke esc1, sekarang pindah ke esc2
+p->setPwm(1800); // esc2.setPwm(1800);
+
+r = esc2; // bukan memindah reference, tetapi menyalin nilai esc2 ke esc1
+// sama kayak esc1.setPwm(esc2.getPwm()); atau esc1 = esc2;
+```
+
+## Design Pattern
+
+## Pemrograman Konkuren dan Asinkron
+
+## Referensi Tambahan
 
 ## Credits
+
 - Nisrina Zakiyah
 - Muhammad Rafi' Abdurrahman
 - Zulfaqqar Nayaka Athadiansyah

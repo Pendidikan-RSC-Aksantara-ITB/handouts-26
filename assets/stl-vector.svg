@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="160" viewBox="0 0 600 160">
+  <style>
+    .box { fill: #f28b97; stroke: #852467; stroke-width: 2; }
+    .cell { fill: #f28b97; stroke: #852467; stroke-width: 1.5; }
+    .ghost { fill: #f28b97; stroke: #852467; stroke-dasharray: 4 4; }
+    .title { font: 700 16px sans-serif; fill: #852467; }
+    .text { font: 13px sans-serif; fill: #852467; }
+  </style>
+  <text x="20" y="26" class="title">vector (ukuran dinamis)</text>
+  <rect x="20" y="40" width="560" height="80" class="box"/>
+  <rect x="40" y="55" width="70" height="40" class="cell"/>
+  <rect x="120" y="55" width="70" height="40" class="cell"/>
+  <rect x="200" y="55" width="70" height="40" class="cell"/>
+  <rect x="280" y="55" width="70" height="40" class="cell"/>
+  <rect x="360" y="55" width="70" height="40" class="ghost"/>
+  <rect x="440" y="55" width="70" height="40" class="ghost"/>
+  <rect x="520" y="55" width="40" height="40" class="ghost"/>
+  <text x="40" y="135" class="text">Bisa bertambah; biasanya ada ruang cadangan (capacity).</text>
+</svg>

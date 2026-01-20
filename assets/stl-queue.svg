@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="180" viewBox="0 0 600 180">
+  <style>
+    .cell { fill: #f28b97; stroke: #852467; stroke-width: 1.5; }
+    .title { font: 700 16px sans-serif; fill: #852467; }
+    .text { font: 13px sans-serif; fill: #852467; }
+    .arrow { stroke: #852467; stroke-width: 2; marker-end: url(#arrow); }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#852467"/>
+    </marker>
+  </defs>
+  <text x="20" y="26" class="title">queue (FIFO)</text>
+  <rect x="80" y="70" width="70" height="40" class="cell"/>
+  <rect x="160" y="70" width="70" height="40" class="cell"/>
+  <rect x="240" y="70" width="70" height="40" class="cell"/>
+  <rect x="320" y="70" width="70" height="40" class="cell"/>
+  <line x1="30" y1="90" x2="70" y2="90" class="arrow"/>
+  <text x="10" y="120" class="text">dequeue</text>
+  <line x1="410" y1="90" x2="460" y2="90" class="arrow"/>
+  <text x="430" y="120" class="text">enqueue</text>
+  <text x="80" y="150" class="text">Yang masuk dulu, keluar dulu.</text>
+</svg>

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="150" viewBox="0 0 600 150">
+  <style>
+    .node { fill: #f28b97; stroke: #852467; stroke-width: 1.5; }
+    .ptr { fill: #f28b97; stroke: #852467; stroke-width: 1.5; }
+    .title { font: 700 16px sans-serif; fill: #852467; }
+    .text { font: 13px sans-serif; fill: #852467; }
+    .arrow { stroke: #852467; stroke-width: 2; marker-end: url(#arrow); }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#852467"/>
+    </marker>
+  </defs>
+  <text x="20" y="26" class="title">list (linked list)</text>
+  <rect x="40" y="50" width="60" height="40" class="node"/>
+  <rect x="100" y="50" width="20" height="40" class="ptr"/>
+  <rect x="180" y="50" width="60" height="40" class="node"/>
+  <rect x="240" y="50" width="20" height="40" class="ptr"/>
+  <rect x="320" y="50" width="60" height="40" class="node"/>
+  <rect x="380" y="50" width="20" height="40" class="ptr"/>
+  <line x1="120" y1="70" x2="180" y2="70" class="arrow"/>
+  <line x1="260" y1="70" x2="320" y2="70" class="arrow"/>
+  <text x="40" y="125" class="text">Cepat untuk insert/hapus di tengah, tapi akses indeks lambat.</text>
+</svg>

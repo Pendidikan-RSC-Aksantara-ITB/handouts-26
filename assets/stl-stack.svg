@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="180" viewBox="0 0 600 180">
+  <style>
+    .cell { fill: #f28b97; stroke: #852467; stroke-width: 1.5; }
+    .title { font: 700 16px sans-serif; fill: #852467; }
+    .text { font: 13px sans-serif; fill: #852467; }
+    .arrow { stroke: #852467; stroke-width: 2; marker-end: url(#arrow); }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#852467"/>
+    </marker>
+  </defs>
+  <text x="20" y="26" class="title">stack (LIFO)</text>
+  <rect x="80" y="50" width="140" height="30" class="cell"/>
+  <rect x="80" y="85" width="140" height="30" class="cell"/>
+  <rect x="80" y="120" width="140" height="30" class="cell"/>
+  <line x1="150" y1="10" x2="150" y2="50" class="arrow"/>
+  <text x="120" y="30" class="text">push</text>
+  <line x1="200" y1="50" x2="200" y2="12" class="arrow"/>
+  <text x="220" y="30" class="text">pop</text>
+  <text x="140" y="70" class="text">Top</text>
+  <text x="80" y="170" class="text">Yang masuk terakhir, keluar dulu.</text>
+</svg>

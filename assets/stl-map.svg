@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="160" viewBox="0 0 600 160">
+  <style>
+    .row { fill: #f28b97; stroke: #852467; stroke-width: 1.5; }
+    .title { font: 700 16px sans-serif; fill: #852467; }
+    .text { font: 13px sans-serif; fill: #852467; }
+  </style>
+  <text x="20" y="26" class="title">map (key → value)</text>
+  <rect x="40" y="45" width="520" height="30" class="row"/>
+  <rect x="40" y="80" width="520" height="30" class="row"/>
+  <rect x="40" y="115" width="520" height="30" class="row"/>
+  <text x="55" y="66" class="text">"latitude"</text>
+  <text x="220" y="66" class="text">→</text>
+  <text x="250" y="66" class="text">-6.8912</text>
+  <text x="55" y="101" class="text">"longitude"</text>
+  <text x="220" y="101" class="text">→</text>
+  <text x="250" y="101" class="text">107.6107</text>
+  <text x="55" y="136" class="text">"altitude"</text>
+  <text x="220" y="136" class="text">→</text>
+  <text x="250" y="136" class="text">715.4</text>
+</svg>
