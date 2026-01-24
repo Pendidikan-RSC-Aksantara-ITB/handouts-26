@@ -396,6 +396,104 @@ Di sini, `Sensor` mendefinisikan method virtual `readData()`. `Ultrasonic` dan `
 
 ## Fitur Lanjutan C++
 
+### **Pointer (\*) vs Reference (&)**
+
+Sebelum bicara pointer, kita perlu paham konsep alamat memori. Kita tahu bahwa komputer punya RAM untuk menyimpan data saat program berjalan. Nah, RAM ini seperti lemari arsip dengan banyak laci, dan setiap laci punya nomor unik sebagai alamat.
+
+Ketika program berjalan, setiap variabel/objek disimpan di RAM pada lokasi tertentu di dalam memori, yakni laci dengan nomor unik tersebut. Alamat ini memungkinkan program untuk mengakses data yang disimpan di lokasi tersebut.
+
+**Pointer** adalah variabel yang menyimpan alamat tersebut. Karena yang disimpan adalah alamat, pointer bisa bernilai `nullptr` (*null pointer*, artinya tidak menunjuk ke mana pun) dan diarahkan ulang ke alamat lain. Jika pointer adalah alamat laci, maka untuk mengakses isinya kita perlu membuka laci tersebut. Ini dilakukan dengan operator dereference `*`. Cara akses atribut atau method lewat pointer memakai operator `->`.
+
+**Reference** adalah **nama lain** untuk objek yang sudah ada. Ibaratnya, reference adalah label tambahan yang ditempel di laci arsip. Reference harus diinisialisasi saat deklarasi dan tidak bisa `nullptr`. Setelah diikat ke suatu objek, reference tidak bisa dipindahkan ke objek lain.
+
+Simpelnya, pointer itu seperti alamat rumah, sedangkan reference itu nama lain untuk rumah yang sama. Alamat bisa diganti, nama lain tidak bisa dipindah ke rumah lain.
+
+![Ilustrasi pointer dan reference](../assets/pointer-reference.svg)
+
+Contoh sederhana berikut menunjukkan cara *dereference* dan perbedaan perilaku pointer vs reference.
+
+```cpp
+ESC esc1;
+ESC esc2;
+
+ESC* p = &esc1;   // pointer menyimpan alamat esc1
+ESC& r = esc1;    // reference adalah alias untuk esc1
+
+// dereference pointer (akses objek yang ditunjuk)
+(*p).setPwm(1500);
+// akses lewat arrow (lebih praktis)
+p->setPwm(1600);
+// dua cara di atas sama kayak esc1.setPwm(1600);
+
+// reference diakses seperti objek biasa
+r.setPwm(1700); // sama kayak esc1.setPwm(1700);
+
+// pointer bisa diarahkan ulang ke objek lain
+p = &esc2; // tadinya p menunjuk ke esc1, sekarang pindah ke esc2
+p->setPwm(1800); // esc2.setPwm(1800);
+
+r = esc2; // bukan memindah reference, tetapi menyalin nilai esc2 ke esc1
+// sama kayak esc1.setPwm(esc2.getPwm()); atau esc1 = esc2;
+```
+
+### Alokasi Dinamis (new/delete)
+
+Kalau kita punya kelas `Sensor`, biasanya kita membuat objeknya di *stack*:
+
+```cpp
+Sensor s1; // di stack
+s1.read();
+```
+
+Namun, cara ini membatasi umur objek sesuai blok kode tempat dia dibuat. Setelah keluar dari blok, objek otomatis dihapus. Untuk objek yang perlu bertahan lebih lama atau ukurannya tidak pasti, kita butuh alokasi di *heap*.
+
+Kadang kita tidak tahu berapa banyak memori yang dibutuhkan saat menulis kode. Misalnya, jumlah sensor yang terhubung bisa berubah-ubah. Untuk itu, C++ menyediakan **alokasi dinamis** dengan `new` dan `delete`. Pada dasarnya, `new` meminta memori dari [*heap*](https://www.geeksforgeeks.org/dsa/heap-data-structure/) (area memori untuk alokasi dinamis) dan mengembalikan pointer ke lokasi tersebut. Setelah selesai, kita harus membebaskan memori dengan `delete` supaya tidak terjadi *memory leak*.
+
+```cpp
+#include <iostream>
+using namespace std;
+class Sensor {
+public:
+    Sensor() { cout << "Sensor dibuat" << endl; }
+    ~Sensor() { cout << "Sensor dihapus" << endl; }
+    void read() { cout << "Membaca data sensor" << endl; }
+};
+int main() {
+    // alokasi dinamis
+    Sensor* s = new Sensor();
+    s->read();
+
+    // bebaskan memori
+    delete s;
+}
+```
+
+### Smart Pointer
+
+Pointer biasa rawan menyebabkan *memory leak* (memori tidak terpakai tapi tidak bisa diakses) dan *dangling pointer* (pointer menunjuk ke memori yang sudah dibebaskan). Untuk mengatasi ini, C++ menyediakan **smart pointer** di pustaka standar (`<memory>`). Smart pointer adalah pembungkus pointer biasa agar memori dilepas otomatis saat sudah tidak dipakai.
+
+Contoh singkat:
+
+```cpp
+#include <iostream>
+#include <memory>
+using namespace std;
+
+class Sensor {
+public:
+    void read() { cout << "read" << endl; }
+};
+
+int main() {
+    auto s1 = make_unique<Sensor>(); // unique ownership, cuma bisa ada satu variabel yang pegang pointer ini
+    s1->read();
+
+    auto s2 = make_shared<Sensor>(); // shared ownership, bisa ada banyak variabel yang pegang pointer ini. skrg count = 1
+    auto s3 = s2;                    // s3 megang shared pointer yang sama, count = 2
+    s2->read();
+}
+```
+
 ### **Template Class**
 
 Template memungkinkan class menerima **parameter tipe** di waktu kompilasi. Compiler akan membuat versi class baru untuk setiap tipe yang dipakai. Ini menghindari duplikasi kode tanpa kehilangan performa.
@@ -494,47 +592,24 @@ std::stack<int> st; st.push(10); st.pop();
 std::queue<int> q; q.push(10); q.pop();
 ```
 
-### **Pointer (\*) vs Reference (&)**
+## **Design Pattern**
 
-Sebelum bicara pointer, kita perlu paham konsep alamat memori. Kita tahu bahwa komputer punya RAM untuk menyimpan data saat program berjalan. Nah, RAM ini seperti lemari arsip dengan banyak laci, dan setiap laci punya nomor unik sebagai alamat.
+Waktu program masih kecil, kita bisa improvise dengan bebas. Tapi saat fitur mulai banyak, pola masalah yang sama akan muncul berulang, yaitu kode yang serupa tersebar di banyak tempat, logika makin sulit diikuti, dan perubahan kecil bisa berdampak ke banyak file. Kita mungkin menyerah dan mengikuti kata pepatah, "if it works, don't you ever f**kin' touch it."
 
-Ketika program berjalan, setiap variabel/objek disimpan di RAM pada lokasi tertentu di dalam memori, yakni laci dengan nomor unik tersebut. Alamat ini memungkinkan program untuk mengakses data yang disimpan di lokasi tersebut.
+Di titik ini, kita butuh rumus cepat UTBK atau apalah itu untuk merancang program supaya kodenya rapi dan gampang di-*maintain*. Solusinya adalah pola desain atau **design pattern**.
 
-**Pointer** adalah variabel yang menyimpan alamat tersebut. Karena yang disimpan adalah alamat, pointer bisa bernilai `nullptr` (*null pointer*, artinya tidak menunjuk ke mana pun) dan diarahkan ulang ke alamat lain. Jika pointer adalah alamat laci, maka untuk mengakses isinya kita perlu membuka laci tersebut. Ini dilakukan dengan operator dereference `*`. Cara akses atribut atau method lewat pointer memakai operator `->`.
+Ada macam-macam masalah dalam pemrograman yang sering muncul berulang, dan *design pattern* adalah pola solusi yang sudah terbukti bekerja bagus dan sering dipakai untuk masalah-masalah umum tersebut. Anggap saja seperti rumus cepat UTBK yang tinggal dipakai sesuai kebutuhan karena tipe soalnya pasti itu-itu aja. Tujuannya lebih ke membuat struktur program lebih rapi, mudah diubah, dan mudah dipahami oleh orang lain.
 
-**Reference** adalah **nama lain** untuk objek yang sudah ada. Ibaratnya, reference adalah label tambahan yang ditempel di laci arsip. Reference harus diinisialisasi saat deklarasi dan tidak bisa `nullptr`. Setelah diikat ke suatu objek, reference tidak bisa dipindahkan ke objek lain.
+Kitab suci *design pattern* adalah situs web [refactoring.guru](https://refactoring.guru/design-patterns/cpp), yang mengelompokkan *pattern* ke dalam tiga kategori besar, yaitu *creational*, *structural*, dan *behavioral*. Pola *creational* berhubungan dengan cara membuat objek, *structural* berkaitan dengan cara mengorganisasi kelas dan objek, sedangkan *behavioral* fokus pada interaksi antarobjek.
 
-Simpelnya, pointer itu seperti alamat rumah, sedangkan reference itu nama lain untuk rumah yang sama. Alamat bisa diganti, nama lain tidak bisa dipindah ke rumah lain.
+Untuk *handout* ini, kita akan bahas tiga *pattern* mewakili tiap kategori, yaitu Adapter (*structural*), Observer (*behavioral*), dan Factory (*creational*).
 
-![Ilustrasi pointer dan reference](../assets/pointer-reference.svg)
+### Adapter
 
-Contoh sederhana berikut menunjukkan cara *dereference* dan perbedaan perilaku pointer vs reference.
 
-```cpp
-ESC esc1;
-ESC esc2;
+### Observer
 
-ESC* p = &esc1;   // pointer menyimpan alamat esc1
-ESC& r = esc1;    // reference adalah alias untuk esc1
-
-// dereference pointer (akses objek yang ditunjuk)
-(*p).setPwm(1500);
-// akses lewat arrow (lebih praktis)
-p->setPwm(1600);
-// dua cara di atas sama kayak esc1.setPwm(1600);
-
-// reference diakses seperti objek biasa
-r.setPwm(1700); // sama kayak esc1.setPwm(1700);
-
-// pointer bisa diarahkan ulang ke objek lain
-p = &esc2; // tadinya p menunjuk ke esc1, sekarang pindah ke esc2
-p->setPwm(1800); // esc2.setPwm(1800);
-
-r = esc2; // bukan memindah reference, tetapi menyalin nilai esc2 ke esc1
-// sama kayak esc1.setPwm(esc2.getPwm()); atau esc1 = esc2;
-```
-
-## Design Pattern
+### Factory
 
 ## Pemrograman Konkuren dan Asinkron
 
