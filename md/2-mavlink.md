@@ -200,3 +200,9 @@ asyncio.run(run())
 [https://mavsdk.mavlink.io/main/en/index.html](https://mavsdk.mavlink.io/main/en/index.html)  
 [https://mavlink.io/en/](https://mavlink.io/en/) (pengen cari lebih dalam di sini)  
 [https://www.youtube.com/watch?v=iZ-usX1VXRI&t=157s](https://www.youtube.com/watch?v=iZ-usX1VXRI&t=157s) (tentang MAVLink juga)
+
+## Credits
+
+- Audric Yusuf Maynard Simatupang
+- Ariel Cornelius Sitorus
+- Zulfaqqar Nayaka Athadiansyah
