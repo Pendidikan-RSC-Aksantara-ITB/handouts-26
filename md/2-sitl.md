@@ -270,7 +270,11 @@ Kondisi GUI warna hitam doang terjadi karena GUI gagal nemuin server atau gagal 
 export GZ_IP=127.0.0.1
 ```
 
-(klo mau taruh di `~/.bashrc` biar enak)
+Kalo mau bisa tambahin alias di `~/.bashrc`:
+```bash
+alias gzs='GZ_IP=127.0.0.1 gz sim'
+```
+Jadi semua command `gz sim` bisa diganti jadi `gzs` aja.
 
 
 
