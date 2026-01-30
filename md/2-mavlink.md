@@ -14,7 +14,7 @@ MAVLink juga sangat *reliable* untuk komunikasi antara berbagai jenis wahana, gr
 
 Tiap paket pesan MAVLink tersusun atas format berikut.
 
-![](../assets/mavlink.png)
+![Struktur paket MAVLink](../assets/mavlink.png)
 
 - Awal paket (STX) berisi *magic number* 0xFD (dalam heksadesimal) untuk membedakannya dengan protokol lain.  
 - LEN adalah panjang *payload* (konten yang dikandung paket), berkisar antara 1 hingga 255.  
@@ -65,57 +65,6 @@ Aturan penggunaan:
 | Gimbal | 154 |
 | GCS | 255 |
 
-### MAVROS
-
-MAVROS adalah jembatan antara ROS dengan MAVLink, yang memungkinkan drone berbasis ROS berkomunikasi dengan flight controller.
-
-Secara singkat, MAVROS bekerja sebagai middleware yang berbicara dengan flight controller menggunakan MAVLink dan berbicara kepada kode ROS dan pengguna menggunakan ROS Topic, Service, dan Action.
-
-Praktik MAVROS:
-
-1. Cara menyambungkan MAVROS dengan FC
-   Untuk menyambungkan MAVROS dengan FC, harus dilakukan kedua hal tersebut:
-
-   - Berikan akses pada serial port:
-
-     ```bash
-     sudo chmod 666 /dev/ttyACM0
-     ```
-
-   - Sambungkan MAVROS:
-
-     ```bash
-     ros2 launch mavros apm.launch fcu_url:=serial://<serial>:<baud rate>
-     ```
-
-     Contoh:
-
-     ```bash
-     ros2 launch mavros apm.launch fcu_url:=serial:///dev/ttyACM0:921600
-     ```
-
-   Perhatikan bahwa untuk menyambungkan MAVROS, diperlukan *baud rate*. Nilai *baud rate* berbeda-beda untuk setiap FC. Untuk mencari nilai *baud rate*-nya, harus dites satu per satu dari list berikut:
-
-   - 1200
-   - 2400
-   - 4800
-   - 9600
-   - 19200
-   - 38400
-   - 57600
-   - 115200
-   - 921600
-
-2. Cara melihat Topic, Service, dan Action yang diberikan MAVROS
-   Untuk melihat list Topic, Service, dan Action, dapat digunakan command berikut pada cmd :
-
-   - `ros2 topic list`
-   - `ros2 service list`
-   - `ros2 action list`
-
-3. Cara menggunakan Topic, Service, dan Action yang diberikan MAVROS
-   Untuk menggunakan Topic, Service, dan Action, kita dapat membuat kode node subscriber, publisher, client, dll.
-
 ## Messages
 
 MAVLink mempunyai berbagai jenis pesan (*messages*) yang digunakan untuk bertukar informasi antara sistem seperti FC, GCS, dan komponen lainnya. Setiap pesan mempunyai ID unik (Message ID) dan memiliki struktur *payload*-nya sendiri.  
@@ -136,11 +85,54 @@ Berikut adalah beberapa Message ID yang umum digunakan dalam MAVLink ([*common d
 | BATTERY_STATUS | 147 | Informasi status baterai |
 | STATUSTEXT | 253 | Pesan teks status atau peringatan dari sistem |
 
-## Implementasi
+## Beberapa Hal Penting
+
+### MAVLink 1 vs MAVLink 2
+
+- **MAVLink 1** memakai *start sign* (STX) `0xFE` dan format header yang lebih sederhana.
+- **MAVLink 2** memakai STX `0xFD` dan menambah fitur penting seperti:
+  - **Incompat/compat flags** (buat negosiasi fitur dan kompatibilitas).
+  - **Extension fields** (pesan bisa ditambahin field baru tanpa mematahkan parser lama).
+  - **Message signing (opsional)** untuk mengurangi risiko *spoofing* (pemalsuan paket oleh pihak yang tidak berwenang).
+
+### Transport & Port yang Sering Muncul
+
+MAVLink bisa dikirim lewat serial (USB/UART/radio), UDP, atau TCP. Di praktiknya, satu sistem sering punya lebih dari satu link (misalnya radio untuk RC/telemetry + UDP untuk companion).
+
+Port UDP yang sering dipakai (tergantung autopilot/konfigurasi):
+
+| Kebutuhan | Contoh alamat |
+| --- | --- |
+| Aplikasi “listen” dari autopilot | `udp://:14540` atau `udp://:14550` |
+| Autopilot “kirim” ke GCS | `udp://<ip-gcs>:14550` |
+
+### Telemetry vs Telecommand (Ack)
+
+Secara umum ada dua pola komunikasi:
+
+- **Telemetry (streaming)**: autopilot mengirim berkala (mis. `HEARTBEAT`, `ATTITUDE`, `GLOBAL_POSITION_INT`).
+- **(Tele)command (request/response)**: GCS mengirim perintah, autopilot merespons.
+
+Pesan yang sering dipakai untuk command/response:
+
+- `COMMAND_LONG` / `COMMAND_INT`: mengirim perintah (berisi `MAV_CMD`).
+- `COMMAND_ACK`: balasan status eksekusi command (sukses/gagal, alasan, dll).
+
+### Parameter & Mission (Paling Sering Dipakai di Lapangan)
+
+- **Parameter**
+  - Ambil semua parameter: `PARAM_REQUEST_LIST` → autopilot balas `PARAM_VALUE` berkali-kali.
+  - Set parameter: `PARAM_SET` (biasanya perlu verifikasi dari `PARAM_VALUE`).
+
+- **Mission / Waypoint**
+  - Umumnya alurnya: `MISSION_COUNT` → `MISSION_REQUEST_INT` → `MISSION_ITEM_INT` → `MISSION_ACK`.
+  - Untuk download mission, alurnya mirip tapi arah request/reply dibalik.
+
+## Ekosistem
 
 ### MAVProxy
 
-![](../assets/mavproxy.png)
+![mavproxy](../assets/mavproxy.png)
 MAVProxy adalah tool command-line yang berfungsi sebagai router, relay, dan controller untuk komunikasi MAVLink antara flight controller dan berbagai aplikasi lain. Secara sederhana, MAVProxy bagaikan GCS versi CLI.
 
 MAVProxy memiliki fungsi yang mirip dengan GCS pada umumnya. MAVProxy dapat melakukan *arm*, *disarm*, ganti *flight mode*, *upload* dan eksekusi *mission*, dan lain-lain. Akan tetapi, MAVProxy tidak dapat melakukan fungsi-fungsi GCS yang berhubungan dengan GUI, seperti menampilkan peta interaktif.
@@ -195,11 +187,67 @@ async def run():
 asyncio.run(run())
 ```
 
+### MAVROS
+
+MAVROS adalah jembatan antara ROS dengan MAVLink, yang memungkinkan drone berbasis ROS berkomunikasi dengan flight controller.
+
+Secara singkat, MAVROS bekerja sebagai middleware yang berbicara dengan flight controller menggunakan MAVLink dan berbicara kepada kode ROS dan pengguna menggunakan ROS Topic, Service, dan Action.
+
+Praktik MAVROS:
+
+1. Cara menyambungkan MAVROS dengan FC
+   Untuk menyambungkan MAVROS dengan FC, harus dilakukan kedua hal tersebut:
+
+   - Berikan akses pada serial port:
+
+     ```bash
+     sudo chmod 666 /dev/ttyACM0
+     ```
+
+   - Sambungkan MAVROS:
+
+     ```bash
+     ros2 launch mavros apm.launch fcu_url:=serial://<serial>:<baud rate>
+     ```
+
+     Contoh:
+
+     ```bash
+     ros2 launch mavros apm.launch fcu_url:=serial:///dev/ttyACM0:921600
+     ```
+
+   Perhatikan bahwa untuk menyambungkan MAVROS, diperlukan *baud rate*. Nilai *baud rate* berbeda-beda untuk setiap FC. Untuk mencari nilai *baud rate*-nya, harus dites satu per satu dari list berikut:
+
+   - 1200
+   - 2400
+   - 4800
+   - 9600
+   - 19200
+   - 38400
+   - 57600
+   - 115200
+   - 921600
+
+2. Cara melihat Topic, Service, dan Action yang diberikan MAVROS
+   Untuk melihat list Topic, Service, dan Action, dapat digunakan command berikut pada cmd :
+
+   - `ros2 topic list`
+   - `ros2 service list`
+   - `ros2 action list`
+
+3. Cara menggunakan Topic, Service, dan Action yang diberikan MAVROS
+   Untuk menggunakan Topic, Service, dan Action, kita dapat membuat kode node subscriber, publisher, client, dll.
+
+
 ## Referensi
 
 [https://mavsdk.mavlink.io/main/en/index.html](https://mavsdk.mavlink.io/main/en/index.html)  
+
 [https://mavlink.io/en/](https://mavlink.io/en/) (pengen cari lebih dalam di sini)  
+
 [https://www.youtube.com/watch?v=iZ-usX1VXRI&t=157s](https://www.youtube.com/watch?v=iZ-usX1VXRI&t=157s) (tentang MAVLink juga)
+
+[Koubâa et al, 2019, *Mavlink In a Nutshell*](http://www.cister.isep.ipp.pt/docs/micro_air_vehicle_link_(mavlink)_in_a_nutshell__a_survey/1551/view.pdf)
 
 ## Credits
 

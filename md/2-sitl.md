@@ -209,9 +209,13 @@ sim_vehicle.py -v ArduCopter -f gazebo-iris --model JSON --map --console
 ## Referensi
 
 [https://ardupilot.org/dev/docs/building-setup-linux.html\#building-setup-linux](https://ardupilot.org/dev/docs/building-setup-linux.html#building-setup-linux)  
+
 [https://github.com/ArduPilot/ardupilot](https://github.com/ArduPilot/ardupilot)  
+
 [https://github.com/ArduPilot/ardupilot/blob/master/BUILD.md](https://github.com/ArduPilot/ardupilot/blob/master/BUILD.md)
+
 [https://ardupilot.org/dev/docs/copter-commands-in-guided-mode.html\#copter-commands-in-guided-mode](https://ardupilot.org/dev/docs/copter-commands-in-guided-mode.html\#copter-commands-in-guided-mode)
+
 [Playlist YouTube Drone Software Development Tutorial](https://youtube.com/playlist?list=PLy9nLDKxDN683GqAiJ4IVLquYBod_2oA6&si=D51d0bNMaQjBXplP)
 
 ## Credits
