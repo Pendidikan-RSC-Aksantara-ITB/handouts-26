@@ -233,11 +233,13 @@ sim_vehicle.py -v ArduCopter -f gazebo-iris --model JSON --map --console
 ## Known Issues
 Akan di-*update* secara berkala :D 
 1. Path mismatch
+
 `export` itu mirip kayak masang shortcut, bukan secara harfiah, tapi dalam artian kita ngasih tahu OS di mana sesuatu bisa ditemukan, supaya program bisa langsung dipakai tanpa harus ke lokasinya. Kita punya *tools* yang bejibun tapi tersebar di mana-mana. Tapi kita pengen bisa make mereka kapanpun kita mau tanpa harus ngebuka direktori (`cd`) tempat *tools* itu berada.
 
 Jadi intinya coba cek lagi *path* yang di-*export*, udah bener kah itu merujuk ke direktori yang sama dengan direktori `ardupilot` atau `ardupilot_gazebo` yang kamu *clone* dan *build*?
 
 2. Dijalanin pake *server-only* bisa, tapi GUI-nya hitam dan di CLI muncul pesan GUI berkali-kali mencoba mendapatkan *list of worlds*
+
 Ini biasanya masalah *connection*, ya. Pas nyoba jalanin Gazebo *server-only* tanpa GUI:
 ```bash
 gz sim -v4 -s iris_runway.sdf
