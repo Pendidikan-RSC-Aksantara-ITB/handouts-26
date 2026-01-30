@@ -230,6 +230,50 @@ sim_vehicle.py -v ArduCopter -f gazebo-iris --model JSON --map --console
 
 [Playlist YouTube Drone Software Development Tutorial](https://youtube.com/playlist?list=PLy9nLDKxDN683GqAiJ4IVLquYBod_2oA6&si=D51d0bNMaQjBXplP)
 
+## Known Issues
+Akan di-*update* secara berkala :D 
+1. Path mismatch
+`export` itu mirip kayak masang shortcut, bukan secara harfiah, tapi dalam artian kita ngasih tahu OS di mana sesuatu bisa ditemukan, supaya program bisa langsung dipakai tanpa harus ke lokasinya. Kita punya *tools* yang bejibun tapi tersebar di mana-mana. Tapi kita pengen bisa make mereka kapanpun kita mau tanpa harus ngebuka direktori (`cd`) tempat *tools* itu berada.
+
+Jadi intinya coba cek lagi *path* yang di-*export*, udah bener kah itu merujuk ke direktori yang sama dengan direktori `ardupilot` atau `ardupilot_gazebo` yang kamu *clone* dan *build*?
+
+2. Dijalanin pake *server-only* bisa, tapi GUI-nya hitam dan di CLI muncul pesan GUI berkali-kali mencoba mendapatkan *list of worlds*
+Ini biasanya masalah *connection*, ya. Pas nyoba jalanin Gazebo *server-only* tanpa GUI:
+```bash
+gz sim -v4 -s iris_runway.sdf
+```
+semuanya lancar, *world* berhasil dibikin, dan gaada pesan error yang bahaya. Tapi pas jalanin dengan GUI:
+
+```bash
+gz sim -v4 iris_runway.sdf
+```
+
+GUI-nya hitam (*nggak* ada apa-apa lagi) dan di terminal muncul pesan ini berkali-kali:
+```bash
+[GUI] [Dbg] [Gui.cc:355] GUI requesting list of world names. The server may be busy downloading resources. Please be patient.
+```
+
+Jadi sebenernya ketika kita menjalankan `gz sim`, kita ngejalanin dua proses yaitu server/backend (`gz-sim`) dan GUI/frontend (`gz-sim-gui`). Kalo kalian pernah belajar *web/software development* pasti tau kalau mereka ini sebenernya proses yang jalan sendiri-sendiri, makanya harus dihubungin supaya GUI bisa nampilin informasi atau apapun itu yang disediakan server.
+
+Di Gazebo, sambungan ini namanya `gz-transport` dan sistemnya pake mekanisme *publisher/subscriber*. Ceritanya server nge-*publish* ke `/gazebo/worlds` dan
+`/gazebo/starting_world`. Si GUI harus nyari dulu si server via *multicast* atau UDP dan nge-*subscribe* `/gazebo/starting_world` dulu supaya bisa jalan. Tapi ini artinya dia nyobain semua sambungan:
+- Wi-Fi
+- Ethernet (meskipun unplugged)
+- Loopback
+- VPN interfaces
+- Docker bridges
+- IPv6
+
+Kondisi GUI warna hitam doang terjadi karena GUI gagal nemuin server atau gagal nge-*subscribe*. Jadi solusinya gimana? Kita bisa secara eksplisit menentukan mereka pakai alamat IP tertentu:
+
+```bash
+export GZ_IP=127.0.0.1
+```
+
+(klo mau taruh di `~/.bashrc` biar enak)
+
+
+
 ## Credits
 
 - Adhimas Aryo Bimo
