@@ -63,7 +63,6 @@ Aturan penggunaan:
 | Companion Computer | 191-194 |
 | Camera | 100-105 |
 | Gimbal | 154 |
-| GCS | 255 |
 
 ## Messages
 
