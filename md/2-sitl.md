@@ -182,6 +182,8 @@ mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=RelWithDebInfo
 make -j4
 ```
+![](../assets/gz-instal-1.png)
+![](../assets/gz-instal-2.png)
 
 Konfigurasikan environment:
 
