@@ -208,6 +208,7 @@ Harusnya akan ada seperti ini:
 Untuk menguji, coba jalankan ini di satu terminal:
 
 ```bash
+cd ~/gz_ws/src/ardupilot_gazebo/worlds
 gz sim -v4 -r iris_runway.sdf
 ```
 
