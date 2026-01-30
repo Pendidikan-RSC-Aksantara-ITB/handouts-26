@@ -16,13 +16,13 @@ void drawDrone1OnMap() { ... }
 void drawDrone2OnMap() { ... }
 ```
 
-Saat menambah drone baru, atau menambah satu jenis data baru (mis. `battery`), jumlah variabel dan fungsi naiknya tidak terkendali. Ini yang sering berujung ke *spaghetti code*.
+Saat menambah drone baru, atau menambah satu jenis data baru (mis. `battery`), jumlah variabel dan fungsi naiknya tidak terkendali. Ini yang sering berujung ke *spaghetti code*. Dalam proyek yang lebih besar seperti GCS yang menangani banyak drone, banyak jenis telemetry, dan beberapa tampilan UI, pendekatan ini akan cepat runtuh.
 
 **Object Oriented Programming (OOP)** memecah program menjadi kumpulan *object* yang menyimpan data (state) dan punya perilaku (method). Dengan begitu, kita cukup mendefinisikan *blueprint* (mis. `DroneConnection`), lalu membuat objek sebanyak yang dibutuhkan. Hasilnya lebih terstruktur, mudah dirawat, dan lebih siap untuk skala besar.
 
 ### Class dan Object
 
-Secara teknis, **class** adalah *blueprint* yang mendefinisikan atribut (data) dan method (perilaku). **Object** adalah instansinya, yaitu data nyata yang hidup di memori saat program berjalan. Tiap kelas mempunyai atribut yang merepresentasikan karakteristik, keadaan, atau data, serta method yang mendefinisikan perilaku yang bisa dilakukan objek dari kelas tersebut. Secara konkret, atribut adalah variabel yang dimiliki objek, sedangkan method adalah fungsi yang terkait dengan objek tersebut.
+Secara teknis, **class** adalah *blueprint* yang mendefinisikan atribut (data) dan method (perilaku). **Object** adalah instansinya, yaitu data nyata yang hidup di memori saat program berjalan. Tiap kelas mempunyai atribut yang merepresentasikan karakteristik, keadaan, atau data, serta method yang mendefinisikan perilaku yang bisa dilakukan objek dari kelas tersebut. Secara konkret, atribut adalah variabel yang dimiliki objek, sedangkan method adalah fungsi yang terkait dengan objek tersebut. Secara analogi, class itu seperti skematik/datasheet komponen, sedangkan object adalah komponen fisik yang sudah dirakit.
 
 ```cpp
 #include <iostream>
@@ -78,10 +78,7 @@ class MotorDC {
 ### **Encapsulation**
 
 Encapsulation menjaga integritas data. Artinya, data di dalam objek tidak boleh diakses atau diubah sembarangan dari luar.
-Hal ini dicapai dengan membatasi akses ke atribut lewat **access modifier**: `public`, `protected`, dan `private`.
-
-class Rover
-Vehicle <|-- Rover
+Hal ini dicapai dengan membatasi akses ke atribut lewat **access modifier**: `public`, `protected`, dan `private`. Akses untuk membaca dan mengubah data dilakukan lewat *getter*/*setter*, sehingga kita bisa menambah validasi (misalnya menolak nilai GPS yang tidak masuk akal).
 
 | Modifier | Own Class | Derived Class | Main() |
 | :---- | :---- | :---- | :---- |
@@ -134,7 +131,7 @@ Intinya, akses langsung dilarang dan perubahan harus lewat gerbang yang menjaga 
 
 ### **Abstraction**
 
-Abstraction menyembunyikan detail implementasi dan hanya mengekspos kontrak yang diperlukan. Dengan begitu, pemakai cukup tahu “apa yang bisa dilakukan”, bukan “bagaimana caranya”.
+Abstraction menyembunyikan detail implementasi dan hanya mengekspos kontrak yang diperlukan. Dengan begitu, pemakai cukup tahu “apa yang bisa dilakukan”, bukan “bagaimana caranya”. Analogi sederhananya, pilot cukup tahu kalau stick dimajuin maka drone maju, tidak perlu paham PID controller, sensor fusion, atau inverse kinematics di balik layar.
 
 Di C++, abstraksi bisa dibuat lewat **abstract class** (boleh punya state dan method default) dan **interface** (murni kontrak). Contoh berikut memakai satu abstract class dan beberapa interface agar terlihat peran masing-masing.
 
@@ -260,7 +257,7 @@ int main() {
 
 ### **Inheritance**
 
-Inheritance dipakai saat beberapa class memiliki **struktur data dan perilaku dasar yang sama**. Kita menaruh bagian umum di *base class*, lalu turunan menambah perilaku khusus.
+Inheritance dipakai saat beberapa class memiliki struktur data dan perilaku dasar yang sama. Ini sejalan dengan prinsip *Don't Repeat Yourself (DRY)*, yaitu daripada menyalin kode yang sama berulang‑ulang, kita taruh bagian umum di *base class*, lalu turunan menambah perilaku khusus.
 
 ```mermaid
 classDiagram
@@ -594,7 +591,7 @@ std::queue<int> q; q.push(10); q.pop();
 
 ## **Design Pattern**
 
-Waktu program masih kecil, kita bisa improvise dengan bebas. Tapi saat fitur mulai banyak, pola masalah yang sama akan muncul berulang, yaitu kode yang serupa tersebar di banyak tempat, logika makin sulit diikuti, dan perubahan kecil bisa berdampak ke banyak file. Kita mungkin menyerah dan mengikuti kata pepatah, "if it works, don't you ever f**kin' touch it."
+Waktu program masih kecil, kita bisa improvisasi dengan bebas. Tapi saat fitur mulai banyak, pola masalah yang sama akan muncul berulang, yaitu kode yang serupa tersebar di banyak tempat, logika makin sulit diikuti, dan perubahan kecil bisa berdampak ke banyak file.
 
 Di titik ini, kita butuh rumus cepat UTBK atau apalah itu untuk merancang program supaya kodenya rapi dan gampang di-*maintain*. Solusinya adalah pola desain atau **design pattern**.
 
@@ -606,12 +603,345 @@ Untuk *handout* ini, kita akan bahas tiga *pattern* mewakili tiap kategori, yait
 
 ### Adapter
 
+Kadang kita punya dua modul yang “benar” sendiri‑sendiri, tapi antarmukanya tidak cocok. Misalnya sistem baru ingin membaca sensor dengan fungsi `readCelsius()`, sedangkan sensor lama hanya menyediakan `readFahrenheit()`. Mengubah seluruh kode agar paham Fahrenheit bakal bikin berantakan. Ini seperti colokan listrik di beda negara. Perangkatnya bagus, tapi butuh adaptor. Adapter menjadi pihak perantara yang menerjemahkan antara keduanya di tengah. Sistem baru tetap memakai antarmuka yang diinginkan, sementara class lama tetap utuh.
+
+Contoh kasus sederhana:
+
+```mermaid
+classDiagram
+class ITempSensor {
+    +readCelsius()
+}
+class LegacyTempSensor {
+    +readFahrenheit()
+}
+class TempAdapter {
+    -LegacyTempSensor legacy
+    +readCelsius()
+}
+class Client
+Client --> ITempSensor
+ITempSensor <|.. TempAdapter
+TempAdapter --> LegacyTempSensor
+```
+
+Di sini, `ITempSensor` adalah antarmuka yang diharapkan sistem baru, yakni bisa membaca suhu dalam Celsius (`readCelsius()`). `LegacyTempSensor` adalah class lama yang hanya bisa membaca dalam Fahrenheit. `TempAdapter` mengimplementasikan `ITempSensor` dan di dalamnya memakai `LegacyTempSensor` untuk mendapatkan data, lalu mengonversinya ke Celsius.
+
+. `LegacyTempSensor` adalah class lama yang hanya bisa membaca Fahrenheit. `TempAdapter` mengimplementasikan `ITempSensor` dan menerjemahkan panggilan `readCelsius()` menjadi `readFahrenheit()` dari `LegacyTempSensor`.
+
+Diagram umum pattern:
+
+```mermaid
+classDiagram
+class Target {
+    +request()
+}
+class Adapter {
+    -Adaptee adaptee
+    +request()
+}
+class Adaptee {
+    +specificRequest()
+}
+class Client
+Client --> Target
+Target <|.. Adapter
+Adapter --> Adaptee
+```
+
+```cpp
+#include <iostream>
+using namespace std;
+
+class ITempSensor {
+public:
+        virtual double readCelsius() = 0;
+        virtual ~ITempSensor() = default;
+};
+
+class LegacyTempSensor {
+public:
+        double readFahrenheit() { return 86.0; }
+};
+
+class TempAdapter : public ITempSensor {
+        LegacyTempSensor legacy;
+public:
+        double readCelsius() override {
+                double f = legacy.readFahrenheit();
+                return (f - 32.0) * 5.0 / 9.0;
+        }
+};
+
+int main() {
+        TempAdapter adapter;
+        cout << adapter.readCelsius() << endl;
+}
+```
+
+Pada contoh di atas, `TempAdapter` mengimplementasikan `ITempSensor` dan di dalamnya memakai `LegacyTempSensor` untuk mendapatkan data, lalu mengonversinya ke Celsius. Adapter biasanya dipakai saat menggabungkan sistem lama atau library pihak ketiga yang antarmukanya tidak cocok dengan kebutuhan baru.
 
 ### Observer
 
+Dalam ROS, data dipublikasikan oleh *publisher* dan diterima banyak *subscriber* pada suatu *topic*. Jika komponen harus saling tahu langsung, maka akan terjadi ketergantungan karena satu perubahan kecil bisa memengaruhi banyak bagian. Ketimbang begitu, bagaimana kalau ada satu pihak yang bertugas menyebarkan informasi ke semua yang berminat? Pola **Observer** menyelesaikan masalah ini dengan memisahkan *publisher* (disebut juga *subject*) dan *subscriber* (disebut juga *observer*). Saat data baru tersedia, *subject* memberi tahu semua *observer* tanpa perlu tahu detail masing-masing.
+
+Kadang pola ini juga disebut **Broker**, karena ada satu perantara yang “mengurus penyebaran” pesan. Dalam bahasa Indonesia, broker artinya *tengkulak* yang menghubungkan produsen dan banyak pembeli.
+
+Contoh kasus sederhana:
+
+```mermaid
+classDiagram
+class TelemetryBroker {
+    -Subscriber[] subs
+    +subscribe(Subscriber)
+    +publish(int)
+}
+class Subscriber {
+    +onMessage(int)
+}
+class Display
+class Logger
+class Alarm
+TelemetryBroker --> Subscriber
+Subscriber <|.. Display
+Subscriber <|.. Logger
+Subscriber <|.. Alarm
+```
+
+Di sini, `TelemetryBroker` adalah *subject* yang menyimpan daftar `Subscriber`. Saat ada data baru, `publish(int)` dipanggil untuk menyebarkan pesan ke semua subscriber lewat method `onMessage(int)`. `Display`, `Logger`, dan `Alarm` adalah contoh *observer* yang bereaksi terhadap pesan yang diterima.
+
+Diagram umum pattern:
+
+```mermaid
+classDiagram
+class Subject {
+    +attach(Observer)
+    +detach(Observer)
+    +notify()
+}
+class Observer {
+    +update()
+}
+class ConcreteObserverA
+class ConcreteObserverB
+Subject --> Observer
+Observer <|.. ConcreteObserverA
+Observer <|.. ConcreteObserverB
+```
+
+```cpp
+#include <iostream>
+#include <vector>
+using namespace std;
+
+class Subscriber {
+public:
+        virtual void onMessage(int value) = 0;
+        virtual ~Subscriber() = default;
+};
+
+class TelemetryBroker {
+        vector<Subscriber*> subs;
+public:
+        void subscribe(Subscriber* s) { subs.push_back(s); }
+        void publish(int v) { for (auto* s : subs) s->onMessage(v); }
+};
+
+class Display : public Subscriber {
+public:
+        void onMessage(int value) override { cout << "Display: " << value << endl; }
+};
+
+class Logger : public Subscriber {
+public:
+        void onMessage(int value) override { cout << "Log: " << value << endl; }
+};
+
+int main() {
+        TelemetryBroker broker;
+        Display d;
+        Logger l;
+        broker.subscribe(&d);
+        broker.subscribe(&l);
+        broker.publish(42);
+}
+```
+
+Observer umum dipakai saat **satu perubahan perlu disebarkan ke banyak penerima** (pub/sub, event system, notifikasi).
+
 ### Factory
 
+Objek yang kompleks seringkali butuh banyak langkah dan bagian untuk dibuat. Jika kode pembuatan tersebar di banyak tempat, perubahan kecil bisa bikin repot. Pola Factory memusatkan proses pembuatan objek ke satu tempat. Kode lain cukup minta “buatkan objek tipe X” tanpa peduli detailnya.
+
+Contoh kasus sederhana:
+
+```mermaid
+classDiagram
+class DroneFactory {
+    +create(DroneType) Drone
+}
+class Drone {
+    -Frame frame
+    -Motor motor
+    -Controller ctrl
+}
+class Frame
+class Motor
+class Controller
+DroneFactory --> Drone
+Drone *-- Frame
+Drone *-- Motor
+Drone *-- Controller
+```
+
+Maknanya: `DroneFactory` bertanggung jawab merakit `Drone` dengan bagian‑bagian yang sesuai. Kode lain hanya meminta “buatkan drone tipe X”.
+
+Diagram umum pattern:
+
+```mermaid
+classDiagram
+class Creator {
+    +createProduct() Product
+}
+class Product
+class ConcreteCreator
+class ConcreteProduct
+Creator <|-- ConcreteCreator
+Product <|-- ConcreteProduct
+```
+
+```cpp
+#include <iostream>
+#include <memory>
+using namespace std;
+
+struct Frame { string type; };
+struct Motor { string type; };
+struct Controller { string type; };
+
+class Drone {
+public:
+        Frame frame;
+        Motor motor;
+        Controller controller;
+
+        void info() const {
+                cout << frame.type << ", " << motor.type << ", " << controller.type << endl;
+        }
+};
+
+enum class DroneType { Trainer, Racing };
+
+class DroneFactory {
+public:
+        static Drone create(DroneType type) {
+                Drone d;
+                if (type == DroneType::Trainer) {
+                        d.frame = {"plastic"};
+                        d.motor = {"low-kv"};
+                        d.controller = {"stabilized"};
+                } else {
+                        d.frame = {"carbon"};
+                        d.motor = {"high-kv"};
+                        d.controller = {"aggressive"};
+                }
+                return d;
+        }
+};
+
+int main() {
+        Drone trainer = DroneFactory::create(DroneType::Trainer);
+        trainer.info();
+}
+```
+
+Pada contoh ini, `DroneFactory` memiliki method statis `create()` yang merakit `Drone` berdasarkan tipe yang diminta. Kode lain cukup memanggil `DroneFactory::create()` tanpa perlu tahu detail perakitan.
+
 ## Pemrograman Konkuren dan Asinkron
+
+Program konkuren menjalankan beberapa tugas secara bergantian atau paralel. Tujuannya bukan selalu “lebih cepat”, tapi membuat alur lebih responsif (misalnya UI tetap berjalan sambil membaca telemetri). Bayangkan proses seperti dapur restoran, sedangkan thread adalah para koki di dapur yang sama. Mereka bisa bekerja paralel, berbagi peralatan, tapi tetap perlu koordinasi.
+
+### Thread Dasar
+
+```cpp
+#include <iostream>
+#include <thread>
+#include <chrono>
+using namespace std;
+
+void telemetryLoop() {
+    for (int i = 0; i < 3; i++) {
+        cout << "telemetry" << endl;
+        this_thread::sleep_for(chrono::milliseconds(300));
+    }
+}
+
+int main() {
+    thread t(telemetryLoop);
+    for (int i = 0; i < 3; i++) {
+        cout << "ui" << endl;
+        this_thread::sleep_for(chrono::milliseconds(200));
+    }
+    t.join();
+}
+```
+
+### Race Condition dan Mutex
+
+Ketika dua thread mengakses data yang sama, hasilnya bisa kacau. Gunakan **mutex** agar akses ke data bersama hanya satu thread pada satu waktu.
+
+```cpp
+#include <mutex>
+
+int altitude = 0;
+mutex altitude_mtx;
+
+void updateAlt(int v) {
+    lock_guard<mutex> lock(altitude_mtx);
+    altitude = v;
+}
+```
+
+`lock_guard` otomatis membuka kunci saat keluar dari scope.
+
+### Deadlock
+
+Deadlock terjadi ketika dua thread saling menunggu kunci yang dipegang masing‑masing. Contoh sederhana (jangan ditiru):
+
+```cpp
+mutex a, b;
+
+void task1() {
+    lock_guard<mutex> l1(a);
+    lock_guard<mutex> l2(b);
+}
+
+void task2() {
+    lock_guard<mutex> l1(b);
+    lock_guard<mutex> l2(a);
+}
+```
+
+Solusi umum: **kunci dalam urutan yang sama**, atau gunakan `std::scoped_lock` untuk mengunci beberapa mutex sekaligus.
+
+### Async
+
+`std::async` menjalankan fungsi di thread terpisah dan mengembalikan **future** untuk mengambil hasilnya.
+
+```cpp
+#include <future>
+
+int heavyTask() {
+    return 42;
+}
+
+int main() {
+    auto fut = async(launch::async, heavyTask);
+    int result = fut.get();
+}
+```
+
+Dengan async, kita bisa menjalankan pekerjaan berat tanpa memblokir thread utama.
 
 ## Referensi Tambahan
 
