@@ -205,9 +205,21 @@ Tanda $a$ dan $b$ dapat bernilai positif atau negatif. Untuk konvensi **OpenCV**
 
 ## Eksplorasi OpenCV
 
-Install OpenCV-C++: [Windows](https://youtu.be/CnXUTG9XYGI?si=7UPo6BeSwMMn2v-x) | [Linux](https://youtu.be/Nn5OfJjBGmg?si=REvP-WFoSkhxOFZa)
-
-Install OpenCV-Python: `pip install opencv-python`
+Sebelum mulai, install dulu OpenCV lewat sini:
+* Panduan resmi instalasi OpenCV C++:
+    * [Windows](https://docs.opencv.org/4.x/d3/d52/tutorial_windows_install.html)
+    * [Linux](https://docs.opencv.org/4.x/d7/d9f/tutorial_linux_install.html)
+* Install OpenCV Python:
+  cukup install lewat pip. 
+```sh
+pip install opencv-python
+```
+* Video tutorial:
+    * OpenCV C++:
+        * [Windows](https://youtu.be/CnXUTG9XYGI?si=7UPo6BeSwMMn2v-x)
+        * [Linux](https://youtu.be/Nn5OfJjBGmg?si=REvP-WFoSkhxOFZa)
+* How to compile: [Build OpenCV using CMkae](https://docs.opencv.org/4.x/db/df5/tutorial_linux_gcc_cmake.html)
+* Panduan resmi: [Dokumentasi OpenCV](https://docs.opencv.org/4.x/df/d65/tutorial_table_of_content_introduction.html)
 
 ### Konsep Dasar OpenCV
 
@@ -446,6 +458,129 @@ int main() {
     return 0;
 }
 ```
+
+### Basic Object Tracking
+
+Masih ingat soal THT 1? Di bagian ini, akan dijelaskan proses yang dilakukan untuk melakukan tracking video dengan OpenCV C++. Mari kita mulai! Pertama-tama, seperti biasa, include library-library yang diperlukan dan muat videonya. Karena kita akan memproses video dan melakukan _image processing_ sederhana, include library berikut:
+
+```c++
+#include <opencv2/core.hpp>         // core (buat mat)
+#include <opencv2/core/types.hpp>   // tipe data opencv (buat scalar, point, dll)
+#include <opencv2/imgproc.hpp>      // buat image processing (cvt, countour, dll)
+#include <opencv2/opencv.hpp>       // buat video I/O (VideoCapture dll)
+
+#include <iostream>
+#include <string>
+#include <vector>
+
+// Boleh pake using cv, tapi di sini aku ga pake buat nunjukin mana yang masuk namespace cv, mana yg std
+
+int main() {
+    // Muat video
+    std::string inputPath = "object.mp4"; // Pastikan video dan file di folder yang sama
+    cv::VideoCapture video(inputPath);
+    if (!video.isOpened()) {
+        std::cout << "Gada video :(" << std::endl;
+        return 1;
+    } else std::cout << "video masuk, aman bos\n";
+}
+```
+
+Langkah selanjutnya adalah mengekstrak metadata dasar: FPS dan ukuran frame. Dari sana, kita buat video writer baru (untuk kali ini kita pakai MP4) dengan dimensi yang sama. 
+
+
+```c++
+    // Cek metadata dr frame-nya
+    const double fps = video.get(cv::CAP_PROP_FPS); // Berapa frame per second
+    const int width = static_cast<int>(video.get(cv::CAP_PROP_FRAME_WIDTH)); // Lebar frame
+    const int height = static_cast<int>(video.get(cv::CAP_PROP_FRAME_HEIGHT)); // Panjang frame
+    const cv::Size frameSize(width, height); // Masukin ke ukuran frame
+
+    // Siapin writer video
+    std::string outputPath = "tracked.mp4";
+    int fourcc = cv::VideoWriter::fourcc('m', 'p', '4', 'v'); // Untuk encoding video (MP4)
+    cv::VideoWriter writer;
+    if (writer.open(outputPath, fourcc, fps > 0 ? fps : 30.0, frameSize, true) == false) {
+        std::cout << "Ga bisa nulis :)" << std::endl;
+        return 1;
+    }
+```
+
+Berikutnya, kita siapkan variabel bound. Bagian ini adalah inti dari object tracking, yaitu tuning. Karena objek dari video yang ada berwarna merah, maka kita akan membuat batas berwarna merah. 
+
+```c++
+    // Siapin variabel [TUNING SESUNGGUHNYA]
+    cv::Scalar lowerBound1 = cv::Scalar(0, 128, 64); // H S V
+    cv::Scalar upperBound1 = cv::Scalar(10, 255, 255); // Hue, Saturation, Value
+    cv::Scalar lowerBound2 = cv::Scalar(160, 128, 64); // Buat dua karena warna merah terbagi 2
+    cv::Scalar upperBound2 = cv::Scalar(180, 255, 255);
+    int minArea = 300; // Luas minimum supaya dianggap objek (bukan noise)
+```
+
+Pada contoh di atas, pemilihan batas ditulis dalam format HSV. HSV adalah singkatan dari Hue, Saturation, Value. Sistem ini memisahkan warna (hue) dari intensitas (value). 
+* **H (Hue)**: Jenis warna (sudut pada roda warna, standarnya 0-360 derajat, di OpenCV 0-179). Parameter ini menunjukkan warna "murni" mana yang sedang diperiksa.
+* **S (Saturation)**: Intensitas atau kemurnian warna (0-255). Seberapa "putih" warna tersebut. Kalau warnanya mirip seperti baju yang kena pemutih, berarti saturasinya kecil. Sementara kalau warnanya tajam, saturasinya besar.
+* **V (Value):** Kecerahan warna (0–255). Value memungkinkan kita untuk mengontrol kecerahan warna. Value 0 berarti warna hitam murni, semakin tinggi nilainya akan menghasilkan warna yang lebih terang.
+
+![Diagram Warna HSV](../assets/hsv.png)
+
+Mengapa kita menggunakan _Color Space HSV_? Pada kasus ini, kita ingin melakukan deteksi objek berbasis **warna**, sehingga kecerahan dan saturasi tidak seberpengaruh itu. Di sini, warna yang digunakan adalah warna merah sehingga memerlukan 2 batas karena terbagi menjadi dua batas nilai (0-10 dan 16-180). Kemudian, pemilihan saturasi bisa diperkirakan di pertengahan hingga ke maksimum (128-255). Untuk kecerahan warna, kita tidak terlalu perduli nilainya karena videonya sama terangnya, sehingga kita bisa mengambil nilai bebas. Di contoh ini diambil batas 3/4 nilai teratas (64-255). 
+
+Dalam praktiknya, proses ini bisa memakan waktu cukup lama, sehingga diciptakanlah AI untuk Computer Vision dalam training deteksi objek. Supaya mensimulasikan proses tuning, kalian bisa bermain-main dengan angka kalian sendiri dan kemudian melihat apakah hasil deteksinya bagus. 
+
+Langkah selanjutnya adalah melakukan masking untuk setiap frame. Cukup looping untuk setiap frame, ubah ke HSV, dan lakukan masking, lalu gunakan bitwise OR (menggabungkan kedua mask). Sebenarnya, untuk video ini, masking tidak diperluakn karena kontras antara objek dengan _background_ sudah cukup jelas. Tetapi, untuk video yang lebih kompleks, perlu adanya masking untuk membatasi pilihan warna yang relevan saja.
+
+```c++
+    // Siapin frame
+    cv::Mat frame;
+    int frameIndex = 0;
+
+    // Baca tiap frame
+    while (video.read(frame)) {
+        if (frame.empty()) break;
+        
+        // Ubah color space ke HSV 
+        // Kenapa? 
+        cv::Mat hsv;
+        cv::cvtColor(frame, hsv, cv::COLOR_BGR2HSV); 
+
+        // Masking
+        cv::Mat mask1, mask2, mask;
+        cv::inRange(hsv, lowerBound1, upperBound1, mask1);
+        cv::inRange(hsv, lowerBound2, upperBound2, mask2);
+        cv::bitwise_or(mask1, mask2, mask); // Bitwise or untuk gabungin mask
+    }
+```
+
+Setelah melakukan masking, saatnya mencari kontur. Kontur pada dasarnya adalah outline (garis yang membatasi) objek. Tujuan mencari kontur adalah untuk mengetahui batasan objek sehingga bisa mencari luasnya. Di OpenCV, contour disimpan dalam bentuk fungsi utama yang digunakan adalah `cv::findContours()` yang memiliki beberapa parameter. Lakukan eksplorasi sendir untuk memahami kegunaan masing-masing parameter. Dalam kasus ini, kita menggunakan `cv::RETR_EXTERNAL` (_return external_) untuk mengambil batas terluar saja dan `cv::CHAIN_APPROX_SIMPLE` untuk membatasi penyimpanan boundary points hanya untuk ujung-ujung/pojok objek saja. Tentunya karena gambarnya berupa lingkaran pejal, kedua parameter ini kurang berguna, tetapi pada objek yang lebih kompleks, cukup memengahuri performa dan kebenaran algoritma. 
+
+Selanjutnya, untuk setiap kontur, periksa apakah luas konturnya di atas area yang kita inginkan (dalam piksel). Jika luasnya terlalu kecil, abaikan agar mengurangi kesalahan untuk mendeteksi noise. Terakhir, buat bounding box dan tulis teks kalau objeknya sudah terdeteksi. Jangan lupa untuk menuliskan frame yang sudah diedit ke write video dan menulis log agar user tau progess object detection.
+
+```c++
+    // Cari contour (outline objek)
+    std::vector<std::vector<cv::Point>> contours; // array 2d berisi daftar contour yang berisi daftar boundary points
+    cv::findContours(mask, contours, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_SIMPLE);
+
+    // Untuk setiap contour
+    for (const auto& contour : contours) {
+        if (cv::contourArea(contour) < minArea) continue; // Kalau terlalu kecil abaikan
+
+        // Buat bounding box
+        cv::Rect boundingBox = cv::boundingRect(contour);
+        cv::rectangle(frame, boundingBox, cv::Scalar(0, 255, 0), 2); // warna hijau, thickness 2
+
+        // biar bagus buat teks, font scalenya 1 dan warnanya biru
+        cv::putText(frame, "ketemu", cv::Point(boundingBox.x, boundingBox.y), cv::FONT_HERSHEY_PLAIN, 1, cv::Scalar(255, 0, 0));
+    }
+
+    // Masukin video
+    writer.write(frame);
+
+    // log biar tau
+    std::cout << "selesai frame " << ++frameIndex << "\n";
+```
+
+Selesai! Itu tadi contoh cara deteksi objek sederhana. Silakan coba eksplorasi sendiri untuk objek lain atau video yang lebih sulit.
 
 ### Fitur OpenCV
 
