@@ -95,6 +95,8 @@ Selain konvolusi, ada juga operasi morfologi yang sering digunakan dalam pengola
 
 Dengan thresholding, kita dapat dengan mudah mengekstrak objek yang diminati dari citra, yang kemudian dapat digunakan untuk analisis lebih lanjut, seperti penghitungan area, deteksi bentuk, atau pelacakan objek dalam video.
 
+Adapun teknik segmentasi yang lebih canggih melibatkan metode seperti *k-means clustering*, *region growing*, atau *graph-based segmentation*. Teknik-teknik ini memungkinkan pemisahan objek yang lebih kompleks berdasarkan karakteristik warna, tekstur, atau bentuk, sehingga menghasilkan segmentasi yang lebih akurat dalam situasi di mana objek dan latar belakang memiliki variasi yang lebih besar.
+
 ### Geometri Kamera dan Proyeksi
 
 - Pinhole camera model (konsep; persamaan bisa dijadikan bonus).
