@@ -107,8 +107,6 @@ Ketika mengikuti pelajaran Fisika sebelum kuliah, kalian mungkin pernah melihat 
 
 Secara teoretis, jika celahnya sangat kecil dan hanya berupa titik, cahaya yang masuk dari setiap titik pada _object_ (benda) akan tepat jatuh menjadi bayangan di layar sekali di arah yang berlawanan, menyebabkan terbentuk bayangan bendah secara penuh tetapi terbalik di layar. Konsep inilah yang kemudian menjadi dasar utama _Pinhole Camera Model_ (PCM). Perhatikan bahwa secara realistis, hal barusan tidak mungkin, pasti ada kesalahan kecil di sini dan sana. Tetapi, karena bentuknya yang sederhana, seperti layaknya teori fisika lainnya, _as long as it works good enough, we can use it_.
 
-#### Formasi Gambar melalui Proyeksi Perspektif
-
 Pada _PCM_, gambar yang berada pada koordinat 3D di dunia (_world coordinate_) diproyeksikan ke posisi 2D pada bidang proyeksi kamera (_projection plane_). Biar gambang, mari asumsikan konsep dari gambar di berikut.
 
 * Asumsikan pusat sistem koordinat dunia ada di pinhole kamera, sehingga pinhole terletak pada $O = (0, 0, 0)$.
@@ -124,9 +122,80 @@ Persamaan di atas adalah menunjukkan **formasi gambar melalui proyeksi perspekti
 
 ![Sistem koordinat kamera dan dunia](../assets/coordinates.png)
 
-- Pinhole camera model (konsep; persamaan bisa dijadikan bonus).
-- Coordinate frames & transformasi rigid.
-- Intrinsic/extrinsic parameters: makna dan contoh penggunaannya.
+#### Parameter Intrinsik Kamera
+
+Pada contoh di atas, sistem koordinat yang digunakan mengasumsikan _origin_ di _pinhole_. Persamaan tersebut cukup menyulitkan komputasi, sehingga dibuatlah sistem koordinat baru, sistem koordinat homogen Koordinat homogen merepresentasikan sebuah vektor $N$ dimensi menjadi vektor $N+1$ dimensi. Pada titik tiga dimensi:
+
+$$
+P = 
+\begin{pmatrix}
+X \\
+Y \\
+Z
+\end{pmatrix}
+\;\rightarrow \;
+\begin{pmatrix}
+X \\
+Y \\
+Z \\
+1
+\end{pmatrix}
+$$
+
+Dengan sistem ini, kntuk menghasilkan posisi proyeksi perspektif dalam 2D, cukup kalikan dengan matriks $\mathbf{K}$:
+
+$$
+\mathbf{K}\mathbf{P} =
+
+\begin{bmatrix}
+f & 0 & 0 & 0 \\
+0 & f & 0 & 0 \\
+0 & 0 & 1 & 0
+\end{bmatrix}
+\begin{bmatrix}
+X \\
+Y \\
+Z \\
+1
+\end{bmatrix}
+=
+\begin{bmatrix}
+fX \\
+fY \\
+Z
+\end{bmatrix}
+=
+\lambda
+\begin{bmatrix}
+x \\
+y \\
+1
+\end{bmatrix}
+$$
+
+Dengan menambahkan beberapa parameter lain, matriks $K$ inilah yang disebut **parameter intriksik kamera**. Secara lengkapnya:
+
+$$
+\mathbf{K} =
+\begin{bmatrix}
+a & 0 & c_x & 0 \\
+0 & b & c_y & 0 \\
+0 & 0 & 1 & 0
+\end{bmatrix}
+$$
+
+* $a = f \frac{N}{p}$ dengan $f$ menunjukkan panjang fokus dalam meter, $w$ adalah panjang sensor dalam meter, dan $N$ adalah lebar citra dalam piksel
+* $b = f \frac{M}{w}$, berlaku mirip dengan $a$ tetapi untuk sisi vertikal.
+* $c_x = \frac{N}{2}$ dan $c_y = \frac{M}{2}$ bertujuan untuk mentransformasikan origin ke pojok gambar.
+
+Tanda $a$ dan $b$ dapat bernilai positif atau negatif. Untuk konvensi **OpenCV**,  titik pusat citra berada di sudut kiri atas, yang berarti  $a$ dan $b$ akan bernilai negatif. 
+
+![Parameter intrinsik kamera](../assets/intrinsic.png)
+
+
+#### Parameter Ekstrinsik Kamera
+
+
 
 ### Kalibrasi dan Koreksi
 
