@@ -2,6 +2,8 @@
 
 ## Dasar-Dasar Pengolahan Citra Digital
 
+NB: sangat disarankan untuk baca ini: [MIT Foundations of Computer Vision](https://visionbook.mit.edu/)
+
 ### Representasi Citra
 
 Citra, atau gambar yang kita lihat sehari di layar pada dasarnya tersusun atas piksel-piksel yang merupakan unit terkecilnya.
