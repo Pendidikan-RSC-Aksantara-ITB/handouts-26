@@ -114,9 +114,10 @@ Pada _PCM_, gambar yang berada pada koordinat 3D di dunia (_world coordinate_) d
 * Terdapat bidang proyeksi kamera yang berjarak $f$ (sejauh panjang fokal). Setelah ditransformasi, hasil bayangan akan sama saja dengan bidang virtual kamera yang merupakan cerminan bidang proyeksi kamera dengan jarak yang sama.
 * Buat sistem koordinat 2D pada bidang proyeksid dan bidang virtual. Perhatikan bahwa pada bidang proyeksi, sistem koordinat terbaik karena gambar yang dihasilkan terbalik. 
 * Dengan konsep kesebangunan segitiga, kita bisa mengetahui posisi titik $p = (x, y)$ sebagai hasil proyeksi kamera dengan persamaan berikut:
-  $$
-    x = f \frac{X}{Z} \; \text{dan} \; y = f \frac{Y}{Z}
-  $$
+
+$$
+x = f \cdot \frac{X}{Z}  \text{ dan } y = f \cdot \frac{Y}{Z}
+$$
 
 Persamaan di atas adalah menunjukkan **formasi gambar melalui proyeksi perspektif**. Perhatikan gambar berikut untuk penjelasan lebih lanjut.
 
@@ -124,7 +125,7 @@ Persamaan di atas adalah menunjukkan **formasi gambar melalui proyeksi perspekti
 
 #### Parameter Intrinsik Kamera
 
-Pada contoh di atas, sistem koordinat yang digunakan mengasumsikan _origin_ di _pinhole_. Persamaan tersebut cukup menyulitkan komputasi, sehingga dibuatlah sistem koordinat baru, sistem koordinat homogen Koordinat homogen merepresentasikan sebuah vektor $N$ dimensi menjadi vektor $N+1$ dimensi. Pada titik tiga dimensi:
+Pada contoh di atas, sistem koordinat yang digunakan mengasumsikan _origin_ di _pinhole_. Persamaan tersebut cukup menyulitkan komputasi, sehingga dibuatlah sistem koordinat baru, sistem koordinat homogen. Koordinat homogen merepresentasikan sebuah vektor $N$ dimensi menjadi vektor $N+1$ dimensi. Pada titik tiga dimensi:
 
 $$
 P = 
@@ -133,7 +134,7 @@ X \\
 Y \\
 Z
 \end{pmatrix}
-\;\rightarrow \;
+\rightarrow 
 \begin{pmatrix}
 X \\
 Y \\
@@ -142,30 +143,26 @@ Z \\
 \end{pmatrix}
 $$
 
-Dengan sistem ini, kntuk menghasilkan posisi proyeksi perspektif dalam 2D, cukup kalikan dengan matriks $\mathbf{K}$:
+Dengan sistem ini, untuk menghasilkan posisi proyeksi perspektif dalam 2D, cukup kalikan dengan matriks $\mathbf{K}$:
 
 $$
-\mathbf{K}\mathbf{P} =
-
-\begin{bmatrix}
-f & 0 & 0 & 0 \\
-0 & f & 0 & 0 \\
-0 & 0 & 1 & 0
+\mathbf{K} \mathbf{P} = \begin{bmatrix}
+  f & 0 & 0 & 0 \\
+  0 & f & 0 & 0 \\
+  0 & 0 & 1 & 0
 \end{bmatrix}
 \begin{bmatrix}
 X \\
 Y \\
 Z \\
 1
-\end{bmatrix}
-=
+\end{bmatrix} =
 \begin{bmatrix}
 fX \\
 fY \\
 Z
-\end{bmatrix}
-=
-\lambda
+\end{bmatrix} =
+Z
 \begin{bmatrix}
 x \\
 y \\
@@ -184,7 +181,7 @@ a & 0 & c_x & 0 \\
 \end{bmatrix}
 $$
 
-* $a = f \frac{N}{p}$ dengan $f$ menunjukkan panjang fokus dalam meter, $w$ adalah panjang sensor dalam meter, dan $N$ adalah lebar citra dalam piksel
+* $a = f \frac{N}{l}$ dengan $f$ menunjukkan panjang fokus dalam meter, $l$ adalah panjang sensor dalam meter, dan $N$ adalah lebar citra dalam piksel
 * $b = f \frac{M}{w}$, berlaku mirip dengan $a$ tetapi untuk sisi vertikal.
 * $c_x = \frac{N}{2}$ dan $c_y = \frac{M}{2}$ bertujuan untuk mentransformasikan origin ke pojok gambar.
 
@@ -192,16 +189,47 @@ Tanda $a$ dan $b$ dapat bernilai positif atau negatif. Untuk konvensi **OpenCV**
 
 ![Parameter intrinsik kamera](../assets/intrinsic.png)
 
-
 #### Parameter Ekstrinsik Kamera
 
+Jika parameter intrinsik berurusan dengan bagaimana kamera memproses cahaya secara internal, maka **parameter ekstrinsik** berurusan dengan di mana kamera berada di dunia. Pada contoh sebelumnya, kita selalu mengasumsikan koordinat kamera dan koordinat dunia berada di posisi yang sama. Lalu, bagaimana kasusnya jika kamera berubah posisi, seperti ketika drone dengan kamera bergerak? Maka dari itu, perlu adanya parameter ekstrinsik kamera.
 
+Parameter ekstrinsik mendefinisikan posisi dan orientasi kamera relatif terhadap sistem koordinat dunia (*world coordinate system*). Parameter ini mengubah koordinat objek dari kerangka acuan dunia (*World Frame*) ke kerangka acuan kamera (*Camera Frame*). Perhatikan gambar berikut:
 
-### Kalibrasi dan Koreksi
+![Sistem koordinat dunia dan kamera](../assets/camera-coordinate.png)
 
-- Distorsi lensa (radial/tangential).
-- Prosedur kalibrasi kamera.
-- Undistortion dan dampaknya ke akurasi pengukuran dan tracking.
+Misalkan terdapat sistem koordinat dunia $P_W$ dan sistem koordinat kamera $P_C$. Untuk mengubah pusat antara kedua sistem, kita dapat melakukan **transformasi rigid** (subset dari transformasi linear) yang terdiri dari translasi terhadap vektor $T$ dan rotasi dengan matriks $R$. Kedua parameter inilah yang membentuk parameter ekstrinsik kamera.
+
+$$
+\begin{bmatrix}
+\mathbf{R} & -\mathbf{R}\mathbf{T} \\
+0^{\top} & 1
+\end{bmatrix} = 
+\begin{bmatrix}
+R_1 & R_2 & R_3 & -r_1T \\
+R_4 & R_5 & R_6 & -r_2T \\
+R_7 & R_8 & R_9 & -r_3T \\
+0 & 0 & 0 & 1
+\end{bmatrix}
+$$
+
+dengan
+* $\mathbf{R_{3 \times 3}}$ adalah matriks rotasi yang merepresentasikan orientasi kamera
+* $r_i$ menunjukkan baris ke-i dari matriks $\mathbf{R}$ dan $R_i$ adalah entri ke-i dari matriks $\mathbf{R}$.
+* $\mathbf{T}$  adalah vektor berdimensi 3 untuk translasi posisi kamera terhadap koordinat dunia
+
+### Kalibrasi dan Distorsi Kamera
+
+Pada pelaksanaannya, parameter kamera sangat krusial karena sering digunakan untuk _**state estimation and localization**_ dengan VIO (Visual-Inertial Odometry) atau V-SLAM (Visual Simultaneous Localization and Mapping) serta _**object detection**_ untuk mengambil _payload_, melewati _gate_, atau menghindari tabrakan. Maka dari itu, perlu adanya kalibrasi kamera untuk memastikan parameter kamera tersebut akurat. 
+
+Kalibrasi kamera dilakukan dengan cara menyiapkan pola sederhana (biasanya berupa pola papan catur) dengan dimensi yang sudah diketahui sebelumnya yang direkam dengan kamera yang belum dikalibrasi. Dari gambar yang dihasilkan, kita bisa menyelesaikan sistem persamaan linear yang terbentuk dari relasi antara posisi gambar secara nyata dengan posisi gambar di piksel kamera. Prosesnya biasanya menggunakan dekomposisi QR atau _Singular Value Decomposition_ (SVD). Kalian dapat mempelajarinya sendiri lebih lanjut jika penasaran dengan sisi Aljabar Linear dari proses ini. 
+
+![Kalibrasi kamera](../assets/calibration.png)
+
+Perhatikan gambar di atas! Bentuk gambar yang dihasilkan berbeda dari bentuk gambar pada kamera pada umumnya. Hal ini terjadi karena kamera mengalami **distorsi**, lebih tepatnya distorsi radial. Distorsi pada dasarnya adalah deformasi pada citra, dibagi menjadi distorsi tangensial dan radial. Distorsi tangensial terjadi ketika objek dan kamera berada pada sudut tertentu (contohnya ketika memotret persegi tetapi di gambar menjadi terlihat seperti trapesium). Sementara itu, distorsi radial terjadi ketika kamera memiliki lensa yang cukup kuat, seperti pada kamera _**fisheye**_ (_negative distortion_ atau _barrel distoriton_) atau kamera _**telephoto**_ (_positive distortion_ atau _pincushion distortion_).  
+
+![Jenis distorsi radial](../assets/distortion.png)
+
+Ketika melakukan kalibrasi kamera dengan lensa yang mengalami distorsi, perlu dilakukan teknik kalibrasi secara nonlinear karena sifat umum dari distorsi yang tidak kompatibel dengan sistem persamaan linear. Jika kalian penasaran dengan proses kalibrasi kamera secara praktikal, lihatlah [dokumentasi OpenCV berikut](https://docs.opencv.org/4.x/d9/d0c/group__calib3d.html).
 
 ## Eksplorasi OpenCV
 
@@ -218,7 +246,7 @@ pip install opencv-python
     * OpenCV C++:
         * [Windows](https://youtu.be/CnXUTG9XYGI?si=7UPo6BeSwMMn2v-x)
         * [Linux](https://youtu.be/Nn5OfJjBGmg?si=REvP-WFoSkhxOFZa)
-* How to compile: [Build OpenCV using CMkae](https://docs.opencv.org/4.x/db/df5/tutorial_linux_gcc_cmake.html)
+* How to compile: [Build OpenCV using CMake](https://docs.opencv.org/4.x/db/df5/tutorial_linux_gcc_cmake.html)
 * Panduan resmi: [Dokumentasi OpenCV](https://docs.opencv.org/4.x/df/d65/tutorial_table_of_content_introduction.html)
 
 ### Konsep Dasar OpenCV
@@ -241,6 +269,8 @@ Terdapat 3 perintah utama yang digunakan dalam membaca gambar sederhana. Untuk b
 Contohnya di Python dan C++:
 
 ```python
+# OpenCV Python
+
 import cv2
 image = cv2.imread('makan-bergizi-gratis.jpg')
 cv2.imshow('aku mau mbg (ini judul windownya)', image)
@@ -249,6 +279,8 @@ cv2.destroyAllWindows()
 ```
 
 ```cpp
+# OpenCV C++
+
 #include <opencv2/opencv.hpp>
 int main() {
     cv::Mat image = cv::imread("makan-bergizi-gratis.jpg");  //Menyimpan dalam cv::Mat
@@ -339,46 +371,6 @@ int main() {
 }
 ```
 
-Contoh lagi untuk menampilkan video dari kamera, tapi diubah ke grayscale:
-
-```cpp
-#include <opencv2/opencv.hpp>
-#include <iostream>
- 
-using namespace cv;
-using namespace std; 
-int main() {
-    VideoCapture cap(0);
-
-    if (!cap.isOpened()) {
-        cout << "Cannot open camera" << endl;
-        return -1;
-    }
- 
-    Mat frame, gray;
- 
-    while (true) {
-        cap >> frame;
- 
-        if (frame.empty()) {
-            cout << "Can't receive frame (stream end?). Exiting ..." << endl;
-            break;
-        }
- 
-        cvtColor(frame, gray, COLOR_BGR2GRAY);
-        imshow("frame", gray);
-        if (waitKey(1) == 'q') {
-            break;
-        }
-    }
- 
-    cap.release();
-    destroyAllWindows();
- 
-    return 0;
-}
-```
-
 Untuk membuka kamera kita membuat objek `VideoCapture` dengan argumen `0`. Dalam hal ini kita membuka camera default `0` atau jika error coba ganti jadi `1`.
 
 Nilai `0` bisa diganti file video (.mp4, .avi) atau lainnya. Jika nilai `0` diganti menjadi file berformat .mp4, .avi, atau format video lainnya, program akan menampilkan video dibanding membuka kamera sehingga video bisa dimainkan melalui OpenCV, misal semacam `VideoCapture cap(test.mp4);`.
@@ -461,10 +453,10 @@ int main() {
 
 ### Basic Object Tracking
 
-Masih ingat soal THT 1? Di bagian ini, akan dijelaskan proses yang dilakukan untuk melakukan tracking video dengan OpenCV C++. Mari kita mulai! Pertama-tama, seperti biasa, include library-library yang diperlukan dan muat videonya. Karena kita akan memproses video dan melakukan _image processing_ sederhana, include library berikut:
+Masih ingat soal THT 1? Di bagian ini, akan dijelaskan proses yang dilakukan untuk melakukan tracking video dengan OpenCV C++. Pertama-tama, seperti biasa, include library-library yang diperlukan dan muat videonya. Karena kita akan memproses video dan melakukan _image processing_ sederhana, include library berikut:
 
 ```c++
-#include <opencv2/core.hpp>         // core (buat mat)
+#include <opencv2/core.hpp>         // core (buat mat dll)
 #include <opencv2/core/types.hpp>   // tipe data opencv (buat scalar, point, dll)
 #include <opencv2/imgproc.hpp>      // buat image processing (cvt, countour, dll)
 #include <opencv2/opencv.hpp>       // buat video I/O (VideoCapture dll)
@@ -524,11 +516,11 @@ Pada contoh di atas, pemilihan batas ditulis dalam format HSV. HSV adalah singka
 
 ![Diagram Warna HSV](../assets/hsv.png)
 
-Mengapa kita menggunakan _Color Space HSV_? Pada kasus ini, kita ingin melakukan deteksi objek berbasis **warna**, sehingga kecerahan dan saturasi tidak seberpengaruh itu. Di sini, warna yang digunakan adalah warna merah sehingga memerlukan 2 batas karena terbagi menjadi dua batas nilai (0-10 dan 16-180). Kemudian, pemilihan saturasi bisa diperkirakan di pertengahan hingga ke maksimum (128-255). Untuk kecerahan warna, kita tidak terlalu perduli nilainya karena videonya sama terangnya, sehingga kita bisa mengambil nilai bebas. Di contoh ini diambil batas 3/4 nilai teratas (64-255). 
+Mengapa kita menggunakan _Color Space HSV_? Pada kasus ini, kita ingin melakukan deteksi objek berbasis **warna**, sehingga kecerahan dan saturasi tidak seberpengaruh itu. Di sini, warna yang digunakan adalah warna merah sehingga memerlukan 2 batas karena terbagi menjadi dua batas nilai (0-10 dan 160-180). Kemudian, pemilihan saturasi bisa diperkirakan di pertengahan hingga ke maksimum (128-255). Untuk kecerahan warna, kita tidak terlalu perduli nilainya karena videonya sama terangnya, sehingga kita bisa mengambil nilai bebas. Di contoh ini diambil batas 3/4 nilai teratas (64-255). 
 
-Dalam praktiknya, proses ini bisa memakan waktu cukup lama, sehingga diciptakanlah AI untuk Computer Vision dalam training deteksi objek. Supaya mensimulasikan proses tuning, kalian bisa bermain-main dengan angka kalian sendiri dan kemudian melihat apakah hasil deteksinya bagus. 
+Dalam praktiknya, proses menyesuaikan nilai variabel ini (*tuning*) bisa memakan waktu cukup lama, sehingga diciptakanlah AI untuk Computer Vision untuk mempermudah deteksi objek melalui AI. Supaya mensimulasikan proses tuning, kalian bisa bermain-main dengan angka kalian sendiri dan kemudian melihat apakah hasil deteksinya bagus. 
 
-Langkah selanjutnya adalah melakukan masking untuk setiap frame. Cukup looping untuk setiap frame, ubah ke HSV, dan lakukan masking, lalu gunakan bitwise OR (menggabungkan kedua mask). Sebenarnya, untuk video ini, masking tidak diperluakn karena kontras antara objek dengan _background_ sudah cukup jelas. Tetapi, untuk video yang lebih kompleks, perlu adanya masking untuk membatasi pilihan warna yang relevan saja.
+Langkah selanjutnya adalah melakukan masking untuk setiap frame. Cukup looping untuk setiap frame, ubah ke HSV, dan lakukan masking, lalu gunakan bitwise OR (menggabungkan kedua mask). Sebenarnya, untuk video ini, masking tidak diperlukan karena kontras antara objek dengan _background_ sudah cukup jelas. Tetapi, untuk video yang lebih kompleks, perlu adanya masking untuk membatasi pilihan warna yang relevan saja.
 
 ```c++
     // Siapin frame
@@ -552,7 +544,7 @@ Langkah selanjutnya adalah melakukan masking untuk setiap frame. Cukup looping u
     }
 ```
 
-Setelah melakukan masking, saatnya mencari kontur. Kontur pada dasarnya adalah outline (garis yang membatasi) objek. Tujuan mencari kontur adalah untuk mengetahui batasan objek sehingga bisa mencari luasnya. Di OpenCV, contour disimpan dalam bentuk fungsi utama yang digunakan adalah `cv::findContours()` yang memiliki beberapa parameter. Lakukan eksplorasi sendir untuk memahami kegunaan masing-masing parameter. Dalam kasus ini, kita menggunakan `cv::RETR_EXTERNAL` (_return external_) untuk mengambil batas terluar saja dan `cv::CHAIN_APPROX_SIMPLE` untuk membatasi penyimpanan boundary points hanya untuk ujung-ujung/pojok objek saja. Tentunya karena gambarnya berupa lingkaran pejal, kedua parameter ini kurang berguna, tetapi pada objek yang lebih kompleks, cukup memengahuri performa dan kebenaran algoritma. 
+Setelah melakukan masking, saatnya mencari kontur. Kontur pada dasarnya adalah outline (garis yang membatasi) objek. Tujuan mencari kontur adalah untuk mengetahui batasan objek sehingga bisa mencari luasnya. Di OpenCV, contour disimpan dalam bentuk _array of boundary points_. Fungsi utama yang digunakan adalah `cv::findContours()` yang memiliki beberapa parameter. Lakukan eksplorasi sendiri untuk memahami kegunaan masing-masing parameter. Dalam kasus ini, kita menggunakan `cv::RETR_EXTERNAL` untuk mengambil batas terluar saja dan `cv::CHAIN_APPROX_SIMPLE` untuk membatasi penyimpanan boundary points hanya untuk ujung-ujung/pojok objek saja. Tentunya karena gambarnya berupa lingkaran pejal, kedua parameter ini kurang berguna, tetapi pada objek yang lebih kompleks, cukup memengahuri performa dan kebenaran algoritma. 
 
 Selanjutnya, untuk setiap kontur, periksa apakah luas konturnya di atas area yang kita inginkan (dalam piksel). Jika luasnya terlalu kecil, abaikan agar mengurangi kesalahan untuk mendeteksi noise. Terakhir, buat bounding box dan tulis teks kalau objeknya sudah terdeteksi. Jangan lupa untuk menuliskan frame yang sudah diedit ke write video dan menulis log agar user tau progess object detection.
 
@@ -582,9 +574,9 @@ Selanjutnya, untuk setiap kontur, periksa apakah luas konturnya di atas area yan
 
 Selesai! Itu tadi contoh cara deteksi objek sederhana. Silakan coba eksplorasi sendiri untuk objek lain atau video yang lebih sulit.
 
-### Fitur OpenCV
+### Fitur Lain OpenCV
 
-Silakan eksplorasi sendiri via [OpenCV Documentation](https://docs.opencv.org/4.x/) atau tutorial di YouTube.
+Karena banyaknya fungsi-fungsi dari OpenCV, lakukan eksplorasi sendiri via [OpenCV Documentation](https://docs.opencv.org/4.x/) atau tutorial di YouTube untuk memperdalam pengetahuan kalian. Berikut daftar-daftar topik berguna yang menarik.
 
 - Color Space & Conversion
 - Basic Image Processing
