@@ -99,6 +99,31 @@ Adapun teknik segmentasi yang lebih canggih melibatkan metode seperti *k-means c
 
 ### Geometri Kamera dan Proyeksi
 
+#### Pinhole Camera Model
+
+Ketika mengikuti pelajaran Fisika sebelum kuliah, kalian mungkin pernah melihat tentang berbagai macam lensa yang meneruskan cahaya dari sisi satu ke lainnya. Percaya atau tidak, konsep _Pinhole Camera Model_ (Model Kamera Lubang Jarum) menggunakan analogi yang sama. Perhatikan kedua gambar di bawah. Pada kedua gambar ini, berkas cahaya (dilambangkan dengan panah merah dan biru) hampir selalu lulus. Pada model lensa cembung, cahaya dibengkokkan karena pembiasan pada lensa sehingga terbentuk bayangan pada _film_ (layar). Sementara pada model kamera, seluruh layar ditutupi _barrier_ (pemebatas). Tidak ada lensa, tetapi ada _aperture_ (celah) kecil seperti lubang jarum yang memungkinkan cahaya masuk. 
+
+![Model lensa cembung](../assets/lenses.png) ![Model kamera lubang jarum](../assets/pinhole.png)
+
+Secara teoretis, jika celahnya sangat kecil dan hanya berupa titik, cahaya yang masuk dari setiap titik pada _object_ (benda) akan tepat jatuh menjadi bayangan di layar sekali di arah yang berlawanan, menyebabkan terbentuk bayangan bendah secara penuh tetapi terbalik di layar. Konsep inilah yang kemudian menjadi dasar utama _Pinhole Camera Model_ (PCM). Perhatikan bahwa secara realistis, hal barusan tidak mungkin, pasti ada kesalahan kecil di sini dan sana. Tetapi, karena bentuknya yang sederhana, seperti layaknya teori fisika lainnya, _as long as it works good enough, we can use it_.
+
+#### Formasi Gambar melalui Proyeksi Perspektif
+
+Pada _PCM_, gambar yang berada pada koordinat 3D di dunia (_world coordinate_) diproyeksikan ke posisi 2D pada bidang proyeksi kamera (_projection plane_). Biar gambang, mari asumsikan konsep dari gambar di berikut.
+
+* Asumsikan pusat sistem koordinat dunia ada di pinhole kamera, sehingga pinhole terletak pada $O = (0, 0, 0)$.
+* Misalkan pada koordinat dunia terdapat titik $P = (X, Y, Z)$ dengan $Z$ tegak lurus dari bidang proyeksi kamera.
+* Terdapat bidang proyeksi kamera yang berjarak $f$ (sejauh panjang fokal). Setelah ditransformasi, hasil bayangan akan sama saja dengan bidang virtual kamera yang merupakan cerminan bidang proyeksi kamera dengan jarak yang sama.
+* Buat sistem koordinat 2D pada bidang proyeksid dan bidang virtual. Perhatikan bahwa pada bidang proyeksi, sistem koordinat terbaik karena gambar yang dihasilkan terbalik. 
+* Dengan konsep kesebangunan segitiga, kita bisa mengetahui posisi titik $p = (x, y)$ sebagai hasil proyeksi kamera dengan persamaan berikut:
+  $$
+    x = f \frac{X}{Z} \; \text{dan} \; y = f \frac{Y}{Z}
+  $$
+
+Persamaan di atas adalah menunjukkan **formasi gambar melalui proyeksi perspektif**. Perhatikan gambar berikut untuk penjelasan lebih lanjut.
+
+![Sistem koordinat kamera dan dunia](../assets/coordinates.png)
+
 - Pinhole camera model (konsep; persamaan bisa dijadikan bonus).
 - Coordinate frames & transformasi rigid.
 - Intrinsic/extrinsic parameters: makna dan contoh penggunaannya.
@@ -484,3 +509,10 @@ Inti dari CNN adalah lapisan konvolusi yang menerapkan filter (kernel) berukuran
 [A guide to convolution arithmetic for deep learning oleh Vincent Dumoulin and Francesco Visin](https://arxiv.org/pdf/1603.07285)
 
 [Intuitively Understanding Convolutions for Deep Learning oleh Irhum Shafkat](https://medium.com/data-science/intuitively-understanding-convolutions-for-deep-learning-1f6f42faee1)
+
+
+## Credits
+
+- Adhimas Aryo Bimo
+- Muhammad Akmal
+- Zulfaqqar Nayaka Athadiansyah
